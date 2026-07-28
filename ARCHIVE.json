@@ -4,7 +4,7 @@
   "owner": "safrano9999",
   "archiveRepository": "safrano9999/MUSEUM",
   "releaseTag": "archive-2026-07-28",
-  "sourceCount": 25,
+  "sourceCount": 26,
   "policy": {
     "visibleTrees": "Exact committed default-branch trees under projects/<repository>.",
     "fullGit": "Verified Git bundles preserve every source head and tag.",
@@ -700,6 +700,34 @@
         "asset": "WARDKEEPER.bundle",
         "bytes": 160190,
         "sha256": "1716188595d3d1832c02dbcd9f4aa3c1a77ffa4953d67910b455dd7b3983601c",
+        "complete": true
+      }
+    },
+    {
+      "name": "fedora43-ai",
+      "sourceUrl": "https://github.com/safrano9999/CONTAINER/tree/59f18f0bc6f51a40fc47dd1ffbbb06cdac847d8e/fedora43-ai",
+      "visibility": "PRIVATE",
+      "private": true,
+      "fork": false,
+      "archived": false,
+      "description": "Retired fedora43-ai directory snapshot from CONTAINER.",
+      "createdAt": "2026-07-24T17:40:01+02:00",
+      "updatedAt": "2026-07-28T16:40:56+02:00",
+      "pushedAt": "2026-07-24T17:40:01+02:00",
+      "diskUsageKiB": 548,
+      "defaultBranch": "main",
+      "defaultCommit": "8f79309ac9a984264e33e757cf20a12fdddf84cf",
+      "defaultTree": "b25b5783c51e89922414d8063f3f6f37f1aea748",
+      "branches": 1,
+      "tags": 0,
+      "sourceTreeEntries": 72,
+      "projectPath": "projects/fedora43-ai",
+      "gitlinks": [],
+      "archiveMode": "snapshot",
+      "bundle": {
+        "asset": "fedora43-ai.bundle",
+        "bytes": 79046,
+        "sha256": "80eccdb19ddf35ff8e202aa7610b95f667cb80830514f2edc2f234d072c48d36",
         "complete": true
       }
     }
