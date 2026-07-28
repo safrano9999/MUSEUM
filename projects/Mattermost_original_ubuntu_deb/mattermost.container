@@ -1,0 +1,18 @@
+[Unit]
+Description=Mattermost Team Edition
+After=postgresql.service
+
+[Container]
+Image=localhost/mattermost-deb:latest
+ContainerName=mattermost
+PublishPort=8065:8065
+Volume=mattermost-config:/opt/mattermost/config
+Volume=mattermost-data:/opt/mattermost/data
+Volume=mattermost-logs:/opt/mattermost/logs
+Volume=mattermost-plugins:/opt/mattermost/plugins
+Environment=MM_SQLSETTINGS_DRIVERNAME=postgres
+Environment=MM_SQLSETTINGS_DATASOURCE=postgres://mmuser:mmuser_password@host.containers.internal:5432/mattermost?sslmode=disable&connect_timeout=10
+Network=host
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,141 @@
+[general]
+accounts = gmail,icloud,gmx,webde,outlook,yahoo,zoho
+maxsyncaccounts = 1
+
+[Account gmail]
+localrepository = gmail-local
+remoterepository = gmail-remote
+autorefresh = 5
+
+[Repository gmail-remote]
+type = Gmail
+remotehost = imap.gmail.com
+remoteuser = example@gmail.com
+remotepass = aaaa bbbb cccc dddd
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository gmail-local]
+type = Maildir
+localfolders = Mail/gmail
+nametrans = lambda f: f.replace('[Gmail]/', 'Gmail-')
+
+# -----------------------------
+# iCloud (IMAP)
+# -----------------------------
+[Account icloud]
+localrepository = icloud-local
+remoterepository = icloud-remote
+autorefresh = 5
+
+[Repository icloud-remote]
+type = IMAP
+remotehost = imap.mail.me.com
+remoteuser = example@icloud.com
+remotepass = app-specific-password
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository icloud-local]
+type = Maildir
+localfolders = Mail/icloud
+
+# -----------------------------
+# GMX
+# -----------------------------
+[Account gmx]
+localrepository = gmx-local
+remoterepository = gmx-remote
+autorefresh = 5
+
+[Repository gmx-remote]
+type = IMAP
+remotehost = imap.gmx.net
+remoteuser = example@gmx.net
+remotepass = your-password-or-app-password
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository gmx-local]
+type = Maildir
+localfolders = Mail/gmx
+
+# -----------------------------
+# Web.de
+# -----------------------------
+[Account webde]
+localrepository = webde-local
+remoterepository = webde-remote
+autorefresh = 5
+
+[Repository webde-remote]
+type = IMAP
+remotehost = imap.web.de
+remoteuser = example@web.de
+remotepass = your-password-or-app-password
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository webde-local]
+type = Maildir
+localfolders = Mail/webde
+
+# -----------------------------
+# Outlook / Hotmail
+# -----------------------------
+[Account outlook]
+localrepository = outlook-local
+remoterepository = outlook-remote
+autorefresh = 5
+
+[Repository outlook-remote]
+type = IMAP
+remotehost = outlook.office365.com
+remoteuser = example@outlook.com
+remotepass = app-specific-password
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository outlook-local]
+type = Maildir
+localfolders = Mail/outlook
+
+# -----------------------------
+# Yahoo
+# -----------------------------
+[Account yahoo]
+localrepository = yahoo-local
+remoterepository = yahoo-remote
+autorefresh = 5
+
+[Repository yahoo-remote]
+type = IMAP
+remotehost = imap.mail.yahoo.com
+remoteuser = example@yahoo.com
+remotepass = app-specific-password
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository yahoo-local]
+type = Maildir
+localfolders = Mail/yahoo
+
+# -----------------------------
+# Zoho
+# -----------------------------
+[Account zoho]
+localrepository = zoho-local
+remoterepository = zoho-remote
+autorefresh = 5
+
+[Repository zoho-remote]
+type = IMAP
+remotehost = imap.zoho.com
+remoteuser = example@zoho.com
+remotepass = app-specific-password
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository zoho-local]
+type = Maildir
+localfolders = Mail/zoho

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Burger Builder</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eee;
+    --muted: #888;
+    --input-bg: #0f3460;
+    --input-border: #e94560;
+    --success: #4ecca3;
+    --error: #e94560;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: .3rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .group {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .group-title {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: .8rem;
+    border-bottom: 1px solid var(--accent2);
+    padding-bottom: .4rem;
+  }
+  .field {
+    margin-bottom: .8rem;
+    transition: opacity .2s, max-height .3s;
+  }
+  .field.hidden {
+    display: none;
+  }
+  .field label {
+    display: block;
+    font-size: .9rem;
+    margin-bottom: .3rem;
+  }
+  .field .help {
+    font-size: .75rem;
+    color: var(--muted);
+    margin-bottom: .3rem;
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select {
+    width: 100%;
+    padding: .5rem .7rem;
+    background: var(--input-bg);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text);
+    font-size: .9rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--input-border);
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .3rem 0;
+  }
+  .toggle-row label {
+    margin-bottom: 0;
+    flex: 1;
+  }
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .toggle .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--input-bg);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform .2s, background .2s;
+  }
+  .toggle input:checked + .slider {
+    background: var(--accent);
+  }
+  .toggle input:checked + .slider::before {
+    transform: translateX(20px);
+    background: #fff;
+  }
+  .choice-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .choice-pills button {
+    padding: .4rem .8rem;
+    border: 1px solid var(--accent2);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text);
+    font-size: .8rem;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .choice-pills button:hover {
+    border-color: var(--accent);
+  }
+  .choice-pills button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .actions {
+    display: flex;
+    gap: .8rem;
+    margin-top: 1.5rem;
+  }
+  .actions button {
+    flex: 1;
+    padding: .7rem;
+    border: none;
+    border-radius: 8px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .actions button:hover { opacity: .85; }
+  .btn-save {
+    background: var(--accent2);
+    color: var(--text);
+  }
+  .btn-order {
+    background: var(--accent);
+    color: #fff;
+  }
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: .7rem 1.5rem;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: all .3s;
+    z-index: 100;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.success { background: var(--success); color: #111; }
+  .toast.error { background: var(--error); color: #fff; }
+  .receipt {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  .receipt h2 { margin-bottom: .8rem; }
+  .receipt p { margin: .2rem 0; font-size: .9rem; }
+  .receipt .label { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Burger Builder</h1>
+  <p class="subtitle">Build your perfect burger</p>
+
+  <form id="burgerForm"></form>
+
+  <div class="actions">
+    <button class="btn-save" onclick="saveOrder()">Save for Later</button>
+    <button class="btn-order" onclick="submitOrder()">Place Order</button>
+  </div>
+
+  <div class="receipt" id="receipt"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const schema = {{ schema | safe }};
+const saved = {{ saved | safe }};
+const values = {};
+
+// Init defaults from schema, then overlay saved
+schema.fields.forEach(f => {
+  values[f.key] = f.default;
+});
+Object.keys(saved).forEach(k => {
+  let v = saved[k];
+  // Convert string booleans
+  if (v === 'True' || v === 'true') v = true;
+  if (v === 'False' || v === 'false') v = false;
+  values[k] = v;
+});
+
+function checkWhen(conditions) {
+  if (!conditions) return true;
+  return conditions.every(c => {
+    const val = values[c.key];
+    if (c.eq !== undefined) return String(val) === String(c.eq);
+    if (c.neq !== undefined) return String(val) !== String(c.neq);
+    if (c.in !== undefined) return c.in.map(String).includes(String(val));
+    if (c.truthy !== undefined) {
+      const truthy = val === true || val === 'true' || val === 'True' || val === 1 || val === '1';
+      return c.truthy ? truthy : !truthy;
+    }
+    return true;
+  });
+}
+
+function renderForm() {
+  const form = document.getElementById('burgerForm');
+  const groups = {};
+
+  schema.fields.forEach(f => {
+    const g = f.group || 'other';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(f);
+  });
+
+  let html = '';
+  for (const [group, fields] of Object.entries(groups)) {
+    const groupTitle = group.charAt(0).toUpperCase() + group.slice(1);
+    html += `<div class="group"><div class="group-title">${groupTitle}</div>`;
+    fields.forEach(f => {
+      const visible = checkWhen(f.when);
+      html += `<div class="field ${visible ? '' : 'hidden'}" id="field-${f.key}">`;
+      html += renderField(f);
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+  form.innerHTML = html;
+}
+
+function renderField(f) {
+  const val = values[f.key];
+  const helpHtml = f.help ? `<div class="help">${f.help}</div>` : '';
+
+  switch (f.type) {
+    case 'bool':
+      const checked = val === true || val === 'true' || val === 'True';
+      return `
+        <div class="toggle-row">
+          <label>${f.label}</label>
+          <div class="toggle">
+            <input type="checkbox" id="inp-${f.key}" ${checked ? 'checked' : ''}
+              onchange="setValue('${f.key}', this.checked)">
+            <span class="slider"></span>
+          </div>
+        </div>
+        ${helpHtml}`;
+
+    case 'choice':
+      let pills = '<div class="choice-pills">';
+      (f.choices || []).forEach(c => {
+        const active = String(val) === String(c) ? 'active' : '';
+        pills += `<button type="button" class="${active}"
+          onclick="setValue('${f.key}', '${c}')">${c}</button>`;
+      });
+      pills += '</div>';
+      return `<label>${f.label}</label>${helpHtml}${pills}`;
+
+    case 'int':
+    case 'port':
+      return `<label>${f.label}</label>${helpHtml}
+        <input type="number" id="inp-${f.key}" value="${val || ''}"
+          onchange="setValue('${f.key}', parseInt(this.value) || '')"
+          ${f.type === 'port' ? 'min="1" max="65535"' : ''}>`;
+
+    default: // str
+      return `<label>${f.label}</label>${helpHtml}
+        <input type="text" id="inp-${f.key}" value="${val || ''}"
+          oninput="setValue('${f.key}', this.value)">`;
+  }
+}
+
+function setValue(key, val) {
+  values[key] = val;
+  updateVisibility();
+  // Re-render choice pills to update active state
+  const field = schema.fields.find(f => f.key === key);
+  if (field && field.type === 'choice') {
+    const el = document.getElementById('field-' + key);
+    if (el && !el.classList.contains('hidden')) {
+      el.innerHTML = renderField(field);
+    }
+  }
+}
+
+function updateVisibility() {
+  schema.fields.forEach(f => {
+    const el = document.getElementById('field-' + f.key);
+    if (!el) return;
+    const visible = checkWhen(f.when);
+    el.classList.toggle('hidden', !visible);
+  });
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function saveOrder() {
+  const res = await fetch('/api/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(values),
+  });
+  const data = await res.json();
+  showToast(data.ok ? 'Saved! Come back anytime.' : data.errors.join(', '),
+            data.ok ? 'success' : 'error');
+}
+
+async function submitOrder() {
+  const res = await fetch('/api/submit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(values),
+  });
+  const data = await res.json();
+  if (!data.ok) {
+    showToast(data.errors.join(', '), 'error');
+    return;
+  }
+  showToast('Order placed!', 'success');
+  showReceipt(data.data);
+}
+
+function showReceipt(d) {
+  const r = document.getElementById('receipt');
+  let h = `<h2>Your Order</h2>`;
+  h += `<p><span class="label">Name:</span> ${d.CUSTOMER_NAME || 'Anonymous'}</p>`;
+  h += `<p><span class="label">Bun:</span> ${d.BUN_TYPE || '?'} ${d.BUN_TOASTED ? '(toasted)' : ''}</p>`;
+  h += `<p><span class="label">Patty:</span> ${d.PATTY_TYPE || '?'}`;
+  if (d.PATTY_DONENESS) h += ` (${d.PATTY_DONENESS})`;
+  h += `</p>`;
+  if (d.ADD_CHEESE) h += `<p><span class="label">Cheese:</span> ${d.CHEESE_TYPE || 'cheddar'}</p>`;
+
+  const toppings = [];
+  if (d.ADD_PICKLES) toppings.push('Pickles');
+  if (d.ADD_ONIONS) toppings.push('Onions');
+  if (d.ADD_TOMATO) toppings.push('Tomato');
+  if (d.ADD_LETTUCE) toppings.push('Lettuce');
+  if (d.ADD_JALAPENOS) toppings.push('Jalapenos');
+  if (toppings.length) h += `<p><span class="label">Toppings:</span> ${toppings.join(', ')}</p>`;
+
+  const sauces = [];
+  if (d.SAUCE_KETCHUP) sauces.push('Ketchup');
+  if (d.SAUCE_MUSTARD) sauces.push('Mustard');
+  if (d.SAUCE_MAYO) sauces.push('Mayo');
+  if (d.SAUCE_BBQ) sauces.push('BBQ');
+  if (d.SAUCE_SPECIAL) sauces.push('Special Sauce');
+  if (sauces.length) h += `<p><span class="label">Sauces:</span> ${sauces.join(', ')}</p>`;
+
+  if (d.ADD_FRIES) {
+    let fries = d.FRIES_SIZE || 'medium';
+    const fs = [];
+    if (d.FRIES_SAUCE_KETCHUP) fs.push('ketchup');
+    if (d.FRIES_SAUCE_MAYO) fs.push('mayo');
+    if (fs.length) fries += ` with ${fs.join(' & ')}`;
+    h += `<p><span class="label">Fries:</span> ${fries}</p>`;
+  }
+  if (d.ADD_DRINK) {
+    let drink = d.DRINK_TYPE || '?';
+    if (drink === 'milkshake') drink = `${d.MILKSHAKE_FLAVOR || 'vanilla'} milkshake`;
+    h += `<p><span class="label">Drink:</span> ${drink} (${d.DRINK_SIZE || 'medium'})</p>`;
+  }
+
+  r.innerHTML = h;
+  r.style.display = 'block';
+}
+
+renderForm();
+</script>
+</body>
+</html>

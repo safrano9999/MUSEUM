@@ -1,0 +1,26 @@
+# host.conf — lokale / LAN OpenAI-kompatible Endpoints
+# Kopiere diese Datei nach host.conf und trage deine Daten ein.
+# Wird beim Start geladen — Bot neu starten nach Änderungen.
+#
+# Format:
+#   OPENAI_URL=http://HOST:PORT/v1
+#   OPENAI_URL_KEY=API-KEY          (optional, default: "lm-studio")
+#
+#   OPENAI_URL_2=http://HOST2:PORT/v1
+#   OPENAI_URL_2_KEY=API-KEY
+#   ... bis OPENAI_URL_10
+#
+# Provider-Name im Modell-Picker = Hostname aus der URL (z.B. "192.168.11.50")
+# Es werden nur Modelle eingetragen die der Endpoint tatsächlich zurückgibt.
+# Nicht erreichbare Endpoints werden übersprungen (kein Crash).
+
+# ── Rechner 1: iMac mit LM Studio ─────────────────────────────────────────────
+# LM Studio: Server → Start Server → "Allow connections from LAN" aktivieren
+OPENAI_URL=http://192.168.11.50:1234/v1
+OPENAI_URL_KEY=lm-studio
+
+# ── Rechner 2: Rechner mit Ollama im LAN (Port 11434) ─────────────────────────
+# Ollama: OLLAMA_HOST=0.0.0.0 setzen damit er LAN-Verbindungen annimmt
+# (default lauscht Ollama nur auf localhost)
+OPENAI_URL_2=http://192.168.11.99:11434/v1
+OPENAI_URL_2_KEY=ollama

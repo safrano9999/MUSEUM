@@ -1,0 +1,8 @@
+schema_version = 1
+
+[module]
+name = "tailscale"
+group = "3RDPARTY"
+kind = "feature"
+description = "Tailscale networking"
+default_selected = true

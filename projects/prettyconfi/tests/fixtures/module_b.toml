@@ -1,0 +1,47 @@
+schema_version = 1
+schema_name = "module_b"
+schema_scope = "module"
+schema_order = 30
+
+[[fields]]
+key = "DB_PORT"
+type = "port"
+default = 5432
+label = "Database Port"
+scope = "module"
+group = "ports"
+order = 1
+triggered_by = ["module_b"]
+
+[[fields]]
+key = "DB_HOST"
+type = "str"
+default = "localhost"
+label = "Database Host"
+scope = "module"
+group = "database"
+order = 2
+triggered_by = ["module_b"]
+
+# This key also exists in module_a — should be deduplicated
+[[fields]]
+key = "OPENAI_API_KEY"
+type = "str"
+default = ""
+label = "OpenAI API Key (from B)"
+scope = "global"
+group = "api"
+order = 1
+triggered_by = ["module_b"]
+when = { key = "USE_LLM", truthy = true }
+
+[[fields]]
+key = "DEFAULT_MODEL"
+type = "choice"
+choices = ["gpt-4", "claude-3", "gemini-pro"]
+default = "gpt-4"
+label = "Default LLM Model"
+scope = "global"
+group = "api"
+order = 2
+when = { key = "USE_LLM", truthy = true }

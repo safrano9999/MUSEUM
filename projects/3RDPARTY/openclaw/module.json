@@ -1,0 +1,7 @@
+{
+  "name": "openclaw",
+  "type": "thirdparty-directive",
+  "entrypoint": "README.md",
+  "env_template": "CITADEL/CONTAINER/ENV/thirdparty-openclaw.env",
+  "install_hint": "npm install -g openclaw"
+}

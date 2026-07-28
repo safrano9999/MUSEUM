@@ -1,0 +1,80 @@
+schema_version = 1
+schema_name = "base"
+schema_scope = "global"
+schema_order = 1
+
+[[fields]]
+key = "STACK_NAME"
+type = "str"
+default = ""
+label = "Stack codename"
+help = "Eindeutiger Name fuer diesen Stack (leer = zufaellig)"
+required = false
+scope = "global"
+group = "base"
+order = 1
+
+[[fields]]
+key = "CONTAINER_NAME"
+type = "str"
+default = ""
+label = "Container name"
+help = "Name des Containers (leer = abgeleitet von Stack)"
+scope = "global"
+group = "base"
+order = 2
+
+[[fields]]
+key = "HOSTNAME"
+type = "str"
+default = ""
+label = "Hostname"
+help = "Hostname im Container (leer = abgeleitet von Container)"
+scope = "global"
+group = "base"
+order = 3
+
+[[fields]]
+key = "IMAGE_TAG"
+type = "str"
+default = ""
+label = "Image tag"
+help = "Container image tag (leer = container:latest)"
+scope = "global"
+group = "base"
+order = 4
+
+[[fields]]
+key = "NETWORK_MODE"
+type = "choice"
+choices = ["host", "bridge", "custom"]
+default = "host"
+label = "Network mode"
+help = "Container Netzwerk-Modus"
+required = true
+scope = "global"
+group = "base"
+order = 5
+
+[[fields]]
+key = "BRIDGE_NAME"
+type = "str"
+default = ""
+label = "Bridge network name"
+help = "Name des Bridge-Netzwerks (leer = stack-net)"
+scope = "global"
+group = "base"
+order = 6
+when = { key = "NETWORK_MODE", eq = "bridge" }
+
+[[fields]]
+key = "CUSTOM_NETWORK"
+type = "str"
+default = ""
+label = "Custom network value"
+help = "Wert fuer --network"
+required = true
+scope = "global"
+group = "base"
+order = 7
+when = { key = "NETWORK_MODE", eq = "custom" }

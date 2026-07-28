@@ -1,0 +1,7 @@
+{
+  "name": "hermes",
+  "type": "thirdparty-directive",
+  "entrypoint": "README.md",
+  "env_template": "CITADEL/CONTAINER/ENV/thirdparty-hermes.env",
+  "install_hint": "pip install hermes-agent"
+}

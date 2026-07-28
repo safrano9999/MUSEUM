@@ -1,0 +1,7 @@
+{
+  "name": "claude-code",
+  "type": "thirdparty-directive",
+  "entrypoint": "README.md",
+  "env_template": "CITADEL/CONTAINER/ENV/thirdparty-claude-code.env",
+  "install_hint": "npm install -g @anthropic-ai/claude-code"
+}

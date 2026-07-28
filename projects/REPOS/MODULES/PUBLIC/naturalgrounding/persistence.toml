@@ -1,0 +1,7 @@
+schema_version = 1
+
+[persistence]
+paths = [
+  "/opt/NaturalGrounding-Tiktok-Ying-Video-Manager/config",
+  "/opt/NaturalGrounding-Tiktok-Ying-Video-Manager/VIDEOS",
+]

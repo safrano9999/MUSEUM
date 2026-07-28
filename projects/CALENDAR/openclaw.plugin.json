@@ -1,0 +1,88 @@
+{
+  "id": "calendar",
+  "name": "CALENDAR",
+  "description": "Shows upcoming iCal/Nextcloud calendar events in Telegram.",
+  "contracts": {
+    "tools": [
+      "calendar_run"
+    ]
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "configPath": {
+        "type": "string",
+        "description": "Optional plugin config.json path."
+      },
+      "pythonPath": {
+        "type": "string",
+        "description": "Optional Python interpreter path."
+      },
+      "calenvPath": {
+        "type": "string",
+        "description": "Path to .env with CALENDAR_* iCal entries."
+      },
+      "envFile": {
+        "type": "string",
+        "description": "Compatibility alias for calenvPath."
+      },
+      "logDir": {
+        "type": "string",
+        "description": "Directory for fetch logs."
+      },
+      "certPath": {
+        "type": "string",
+        "description": "Optional CA certificate .pem path."
+      },
+      "timezone": {
+        "type": "string",
+        "default": "Europe/Vienna"
+      },
+      "emptyMessage": {
+        "type": "string",
+        "default": "📭 Keine Termine im Zeitfenster."
+      },
+      "autoSetupPython": {
+        "type": "boolean",
+        "default": true,
+        "description": "Create .venv and install Python requirements on first run."
+      },
+      "webhook": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "path": {
+            "type": "string",
+            "default": "/plugins/calendar/run"
+          }
+        }
+      },
+      "delivery": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Optional direct outbound target for the webhook.",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "default": "telegram"
+          },
+          "target": {
+            "type": "string",
+            "description": "Telegram chat id or channel-specific destination."
+          },
+          "accountId": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+schema_version = 1
+schema_name = "base"
+schema_scope = "global"
+schema_order = 1
+
+[[fields]]
+key = "STACK_NAME"
+type = "str"
+default = "web-stack"
+label = "Stack Name"
+help = "Unique name for this stack"
+required = true
+scope = "global"
+group = "base"
+order = 1
+
+[[fields]]
+key = "NETWORK"
+type = "choice"
+choices = ["host", "bridge", "custom"]
+default = "host"
+label = "Network Mode"
+required = true
+scope = "global"
+group = "base"
+order = 2
+
+[[fields]]
+key = "BRIDGE_NAME"
+type = "str"
+default = "my-bridge"
+label = "Bridge Network Name"
+scope = "global"
+group = "base"
+order = 3
+when = { key = "NETWORK", eq = "bridge" }

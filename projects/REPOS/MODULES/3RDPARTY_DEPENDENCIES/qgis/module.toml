@@ -1,0 +1,8 @@
+schema_version = 1
+
+[module]
+name = "qgis"
+group = "3RDPARTY_DEPENDENCIES"
+kind = "feature"
+description = "QGIS geospatial libraries"
+default_selected = false

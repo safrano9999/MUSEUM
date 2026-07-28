@@ -1,0 +1,5 @@
+generated/
+data*
+__pycache__
+CONFIGS
+.claude/

@@ -1,0 +1,19 @@
+[Unit]
+Description=LiteLLM Proxy with UI
+After=postgresql.service
+
+[Container]
+Image=localhost/litellm-ubuntu:latest
+ContainerName=litellm
+PublishPort=4000:4000
+Volume=%h/container-config/litellm:/app/config:Z
+Environment=LITELLM_MASTER_KEY=CHANGE_ME_MASTER_KEY
+Environment=STORE_MODEL_IN_DB=True
+Environment=LITELLM_LOG=DEBUG
+# API keys — add as needed
+#Environment=ANTHROPIC_API_KEY=sk-ant-...
+#Environment=OPENAI_API_KEY=sk-...
+Network=host
+
+[Install]
+WantedBy=default.target

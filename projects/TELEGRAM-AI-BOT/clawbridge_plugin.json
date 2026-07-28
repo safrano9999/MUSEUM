@@ -1,0 +1,18 @@
+{
+  "plugin": "ai_chat",
+  "description": "Multi-provider LLM chat via litellm",
+  "handler": "ai_chat.py",
+  "commands": {
+    "models":          { "description": "Switch LLM provider and model" },
+    "newconversation": { "description": "Start a new conversation (clear history)" },
+    "save":            { "description": "Save current conversation" },
+    "load":            { "description": "Load a saved conversation" },
+    "settings":        { "description": "Adjust temperature, tokens, thinking level" },
+    "status":          { "description": "Show current model and settings" },
+    "search":          { "description": "Raw web search — returns results without LLM" },
+    "websearch":       { "description": "Toggle auto web search / select provider" },
+    "imagine":         { "description": "Generate an image — /imagine <description>" },
+    "video":           { "description": "Generate a short video — /video <description>" },
+    "tts":             { "description": "Toggle text-to-speech output / select provider" }
+  }
+}

@@ -1,0 +1,8 @@
+Mail/
+LOGS/
+.git/
+__pycache__/
+*.pyc
+rules/rules_custom.json
+mirror_dir_*.json
+offlineimaprc

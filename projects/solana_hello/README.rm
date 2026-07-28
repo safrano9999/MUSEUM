@@ -1,0 +1,7 @@
+- `Anchor.toml` – Cluster, Wallet, Program-ID  
+- `Cargo.toml` – Workspace-Manifest  
+- `README.md` – Projektbeschreibung  
+- `programs/solana_hello/src/lib.rs` – Programmlogik  
+- `programs/solana_hello/Cargo.toml` – Programm-Manifest  
+- `tests/solana_hello.js` – JS-Test mit Mocha
+

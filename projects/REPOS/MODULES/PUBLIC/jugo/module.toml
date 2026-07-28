@@ -1,0 +1,10 @@
+schema_version = 1
+
+[module]
+name = "jugo"
+group = "PUBLIC"
+kind = "repo"
+source = "https://github.com/safrano9999/JUGO.git"
+target_dir = "JUGO"
+description = "JUGO bridge service"
+default_selected = true

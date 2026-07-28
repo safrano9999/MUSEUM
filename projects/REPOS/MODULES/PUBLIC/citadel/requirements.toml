@@ -1,0 +1,4 @@
+schema_version = 1
+
+[requirements]
+dnf = ["caddy", "php-fpm", "php-json", "php-pgsql"]

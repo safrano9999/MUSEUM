@@ -1,0 +1,12 @@
+schema_version = 1
+
+[module]
+name = "citadel"
+group = "PUBLIC"
+kind = "repo"
+source = "https://github.com/safrano9999/CITADEL.git"
+target_dir = "citadel"
+description = "CITADEL reverse proxy + web stack"
+default_selected = true
+is_base = false
+runtime_ref = "deploy/supervisor/citadel.conf"

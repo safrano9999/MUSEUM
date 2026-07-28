@@ -1,0 +1,10 @@
+# cp voiceenv.example .voiceenv
+# Voice transcription + TTS keys — fill in at least one key per section.
+
+# ── Transcription (voice input → text) ────────────────────────────────────────
+WHISPER_API_KEY=sk-...         # OpenAI Whisper (same value as your OPENAI_API_KEY)
+GEMINI_VOICE_KEY=...           # Gemini 1.5 Flash multimodal (same as your GEMINI_API_KEY)
+
+# ── Text-to-Speech (text → voice output) ──────────────────────────────────────
+ELEVENLABS_API_KEY=...         # ElevenLabs (best quality, multilingual)
+OPENAI_TTS_KEY=sk-...          # OpenAI TTS-1 (same value as your OPENAI_API_KEY)

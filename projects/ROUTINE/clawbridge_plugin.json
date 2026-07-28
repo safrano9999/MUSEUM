@@ -1,0 +1,8 @@
+{
+  "plugin": "routine",
+  "description": "Daily routine checklist with inline keyboard",
+  "handler": "routine.py",
+  "commands": {
+    "routine": { "description": "Show today's routine checklist" }
+  }
+}

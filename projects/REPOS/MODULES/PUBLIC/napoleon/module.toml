@@ -1,0 +1,10 @@
+schema_version = 1
+
+[module]
+name = "napoleon"
+group = "PUBLIC"
+kind = "repo"
+source = "https://github.com/safrano9999/NAPOLEON_HILLS_AI_MASTERMIND_CLASSES.git"
+target_dir = "NAPOLEON_HILLS_AI_MASTERMIND_CLASSES"
+description = "Napoleon mastermind web editor"
+default_selected = true

@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Operator//WARDKEEPER//DE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Vienna:20260313T100000
+DTEND;TZID=Europe/Vienna:20260313T180000
+SUMMARY:Marketing-Tag – Visitenkarten & Branding
+DESCRIPTION:Alte Karten sichten, E-Mail-Adresse und Rufnummer klären.\n⚠️ Abhängig vom Gewerbeschein.\nProjekt: COACHENTREPRENEUR-MASTERSALES | Next Step ID: 1.1.3.2.1
+END:VEVENT
+END:VCALENDAR

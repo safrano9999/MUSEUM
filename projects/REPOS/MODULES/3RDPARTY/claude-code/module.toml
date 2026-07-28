@@ -1,0 +1,9 @@
+schema_version = 1
+
+[module]
+name = "claude-code"
+group = "3RDPARTY"
+kind = "directive"
+description = "Claude Code"
+default_selected = true
+thirdparty_dir = "3RDPARTY/claude-code"

@@ -1,0 +1,16 @@
+schema_version = 1
+schema_name = "tailscale"
+schema_scope = "module"
+schema_order = 60
+
+[[fields]]
+key = "TS_AUTHKEY"
+type = "str"
+default = ""
+label = "Tailscale Auth Key"
+help = "Tailscale auth key fuer automatische Verbindung"
+required = true
+scope = "module"
+group = "tailscale"
+order = 1
+triggered_by = ["tailscale"]

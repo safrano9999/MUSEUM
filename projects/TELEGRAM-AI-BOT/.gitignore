@@ -1,0 +1,10 @@
+.botenv
+.env
+.webenv
+.imageenv
+.voiceenv
+host.conf
+sh-agent.service
+conversations/
+current_conversation.json
+favorites.json

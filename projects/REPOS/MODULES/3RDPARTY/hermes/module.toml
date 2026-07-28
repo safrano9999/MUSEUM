@@ -1,0 +1,9 @@
+schema_version = 1
+
+[module]
+name = "hermes"
+group = "3RDPARTY"
+kind = "directive"
+description = "Hermes agent"
+default_selected = true
+thirdparty_dir = "3RDPARTY/hermes"

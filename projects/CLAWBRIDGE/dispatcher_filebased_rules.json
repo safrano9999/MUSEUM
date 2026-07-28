@@ -1,0 +1,8 @@
+{
+  "file_rules": [
+    {
+      "match_ext": [".pdf", ".md", ".txt"],
+      "action": "tg_send_document"
+    }
+  ]
+}

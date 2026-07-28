@@ -1,0 +1,115 @@
+schema_version = 1
+schema_name = "modules"
+schema_scope = "global"
+schema_order = 10
+
+# --- PUBLIC modules ---
+
+[[fields]]
+key = "MOD_citadel"
+type = "bool"
+default = true
+label = "CITADEL reverse proxy + web stack"
+scope = "global"
+group = "PUBLIC"
+order = 1
+
+[[fields]]
+key = "MOD_codeanalyst"
+type = "bool"
+default = true
+label = "CODEANALYST web scanner"
+scope = "global"
+group = "PUBLIC"
+order = 2
+
+[[fields]]
+key = "MOD_jugo"
+type = "bool"
+default = true
+label = "JUGO bridge service"
+scope = "global"
+group = "PUBLIC"
+order = 3
+
+[[fields]]
+key = "MOD_napoleon"
+type = "bool"
+default = true
+label = "Napoleon mastermind web editor"
+scope = "global"
+group = "PUBLIC"
+order = 4
+
+# --- PRIVATE modules ---
+
+[[fields]]
+key = "MOD_pvdach"
+type = "bool"
+default = true
+label = "PV_D-A-CH private service"
+scope = "global"
+group = "PRIVATE"
+order = 10
+
+# --- 3RDPARTY gate ---
+
+[[fields]]
+key = "INCLUDE_3RDPARTY"
+type = "bool"
+default = true
+label = "3rd-party integrieren?"
+help = "Moechtest du 3rd-party Tools einbinden?"
+scope = "global"
+group = "3RDPARTY"
+order = 20
+
+[[fields]]
+key = "MOD_claude-code"
+type = "bool"
+default = true
+label = "Claude Code"
+scope = "global"
+group = "3RDPARTY"
+order = 21
+when = { key = "INCLUDE_3RDPARTY", truthy = true }
+
+[[fields]]
+key = "MOD_codex-cli"
+type = "bool"
+default = true
+label = "Codex CLI"
+scope = "global"
+group = "3RDPARTY"
+order = 22
+when = { key = "INCLUDE_3RDPARTY", truthy = true }
+
+[[fields]]
+key = "MOD_hermes"
+type = "bool"
+default = true
+label = "Hermes agent"
+scope = "global"
+group = "3RDPARTY"
+order = 23
+when = { key = "INCLUDE_3RDPARTY", truthy = true }
+
+[[fields]]
+key = "MOD_openclaw"
+type = "bool"
+default = true
+label = "OpenClaw CLI"
+scope = "global"
+group = "3RDPARTY"
+order = 24
+when = { key = "INCLUDE_3RDPARTY", truthy = true }
+
+[[fields]]
+key = "MOD_tailscale"
+type = "bool"
+default = true
+label = "Tailscale networking"
+scope = "global"
+group = "3RDPARTY"
+order = 25
+when = { key = "INCLUDE_3RDPARTY", truthy = true }

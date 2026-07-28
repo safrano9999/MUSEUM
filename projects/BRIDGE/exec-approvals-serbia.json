@@ -1,0 +1,14 @@
+{
+  "serbia": {
+    "security": "allowlist",
+    "ask": "off",
+    "allowlist": [
+      {
+        "pattern": "/home/openclaw/bin/HIGHIQ.sh"
+      },
+      {
+        "pattern": "./HIGHIQ.sh"
+      }
+    ]
+  }
+}

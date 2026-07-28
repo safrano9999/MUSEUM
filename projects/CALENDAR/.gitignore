@@ -1,0 +1,8 @@
+.env
+.calenv
+LOGS/
+certs/
+.venv/
+__pycache__/
+*.pyc
+.tag
