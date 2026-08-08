@@ -1,0 +1,8 @@
+schema_version = 1
+
+[module]
+name = "php-fpm"
+group = "3RDPARTY_DEPENDENCIES"
+kind = "feature"
+description = "PHP-FPM runtime"
+default_selected = true

@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Operator//WARDKEEPER//DE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Vienna:20260311T180000
+DTEND;TZID=Europe/Vienna:20260311T190000
+SUMMARY:Koffer am Speicher sichten – Gewerbeschein finden
+DESCRIPTION:Den alten Gewerbeschein suchen. Danach neues Formular ausfüllen.\nProjekt: COACHENTREPRENEUR-MASTERSALES | Next Step ID: 16
+END:VEVENT
+END:VCALENDAR

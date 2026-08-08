@@ -1,0 +1,8 @@
+schema_version = 1
+
+[module]
+name = "litellm"
+group = "3RDPARTY_DEPENDENCIES"
+kind = "feature"
+description = "LiteLLM bridge (sdk/proxy mode)"
+default_selected = false

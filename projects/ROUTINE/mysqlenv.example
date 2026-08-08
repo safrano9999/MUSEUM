@@ -1,0 +1,26 @@
+# cp mysqlenv.example .mysqlenv
+# DB_DRIVER: mysql  — MySQL / MariaDB (default)
+#            pgsql  — PostgreSQL
+
+# ── MySQL / MariaDB ────────────────────────────────────────────────────────────
+# DB_DRIVER=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_NAME=telegram_bot
+# DB_USER=botuser
+# DB_PASS=yourpassword
+
+# ── PostgreSQL ─────────────────────────────────────────────────────────────────
+# DB_DRIVER=pgsql
+# DB_HOST=127.0.0.1
+# DB_PORT=5432
+# DB_NAME=telegram_bot
+# DB_USER=botuser
+# DB_PASS=yourpassword
+
+DB_DRIVER=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=telegram_bot
+DB_USER=botuser
+DB_PASS=yourpassword

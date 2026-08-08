@@ -1,0 +1,7 @@
+{
+  "name": "codex-cli",
+  "type": "thirdparty-directive",
+  "entrypoint": "README.md",
+  "env_template": "CITADEL/CONTAINER/ENV/thirdparty-codex-cli.env",
+  "install_hint": "npm install -g @openai/codex"
+}

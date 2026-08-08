@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Operator//WARDKEEPER//DE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Vienna:20260314T100000
+DTEND;TZID=Europe/Vienna:20260314T180000
+SUMMARY:Field Research – Multiple Income / Distributoren-Splitting
+DESCRIPTION:Planung die Produktion zu splitten über mehrere Distributoren. Field Research starten.\nProjekt: COACHENTREPRENEUR-MASTERSALES | Next Step ID: 1.1.9.1.1
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,39 @@
+schema_version = 1
+schema_name = "module_a"
+schema_scope = "module"
+schema_order = 20
+
+[[fields]]
+key = "APP_PORT"
+type = "port"
+default = 5001
+label = "Application Port"
+required = true
+scope = "module"
+group = "ports"
+order = 1
+triggered_by = ["module_a"]
+
+[[fields]]
+key = "OPENAI_API_KEY"
+type = "str"
+default = ""
+label = "OpenAI API Key"
+help = "Shared API key for LLM access"
+required = true
+scope = "global"
+group = "api"
+order = 1
+triggered_by = ["module_a", "module_b"]
+when = { key = "USE_LLM", truthy = true }
+retry_on_no = 2
+retry_prompt = "API Key is needed for AI features. Really skip?"
+
+[[fields]]
+key = "USE_LLM"
+type = "bool"
+default = true
+label = "Enable LLM Integration"
+scope = "global"
+group = "api"
+order = 0

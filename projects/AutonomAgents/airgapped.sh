@@ -1,0 +1,1144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CONFIG_FILE="${AIRGAPPED_CONFIG:-$SCRIPT_DIR/airgapped.env}"
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+  if [[ "${args[$i]}" == "--config" ]]; then
+    if (( i + 1 >= ${#args[@]} )); then
+      echo "ERROR: --config requires a file path" >&2
+      exit 1
+    fi
+    CONFIG_FILE="${args[$((i + 1))]}"
+    break
+  fi
+done
+
+if [[ -n "${AIRGAPPED_CONFIG:-}" || "$CONFIG_FILE" != "$SCRIPT_DIR/airgapped.env" || -f "$CONFIG_FILE" ]]; then
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "ERROR: Config file not found: $CONFIG_FILE" >&2
+    exit 1
+  fi
+  set -a
+  # shellcheck disable=SC1090
+  source "$CONFIG_FILE"
+  set +a
+fi
+
+COPY_DIR="${COPY_DIR:-./copy}"
+TMP_DIR="${TMP_DIR:-./tmp}"
+LEDGER_FILE="${LEDGER_FILE:-$SCRIPT_DIR/.ledger}"
+DEPLOYED_FILE="${DEPLOYED_FILE:-$SCRIPT_DIR/.deployed}"
+
+ENABLE_OPENCLAW="${ENABLE_OPENCLAW:-}"
+ENABLE_HERMES="${ENABLE_HERMES:-}"
+
+MODE="${MODE:-}"
+ARCH="${ARCH:-}"
+OPENCLAW_VERSION="${OPENCLAW_VERSION:-}"
+HERMES_VERSION="${HERMES_VERSION:-}"
+RUN_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+
+SAVE_ENGINE="${SAVE_ENGINE:-docker}"
+LOAD_ENGINE="${LOAD_ENGINE:-docker}"
+
+OPENCLAW_REGISTRY="${OPENCLAW_REGISTRY:-ghcr.io/openclaw/openclaw}"
+HERMES_REGISTRY="${HERMES_REGISTRY:-docker.io/nousresearch/hermes-agent}"
+OPENCLAW_REPO="${OPENCLAW_REPO:-https://github.com/openclaw/openclaw}"
+
+normalize_version_value() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  if [[ "$value" =~ ^[vV][0-9] ]]; then
+    value="${value:1}"
+  fi
+  echo "$value"
+}
+
+usage() {
+  cat <<USAGE
+Usage: $(basename "$0") --save|--load|--patch [options]
+
+Modes:
+  --save       Pull images and create transfer bundle (connected machine)
+  --load       Load images and unpack the OpenClaw repo archive (airgapped machine)
+  --patch      Only patch openclaw/scripts/docker/setup.sh
+
+Options:
+  --config FILE              Optional shell env file (default: ./airgapped.env if present)
+  --arch ARCH                Platform (required for --save), e.g. linux/arm64
+  --openclaw-version VER     OpenClaw version or "latest" (default: auto)
+  --hermes-version VER       Hermes version or "latest" (default: auto)
+
+Examples:
+  ./airgapped.sh --save --arch linux/arm64
+  ./airgapped.sh --load
+  ./airgapped.sh --patch
+USAGE
+  exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --save) MODE="save"; shift ;;
+    --load) MODE="load"; shift ;;
+    --patch) MODE="patch"; shift ;;
+    --config) shift 2 ;;
+    --arch) ARCH="$2"; shift 2 ;;
+    --openclaw-version) OPENCLAW_VERSION="$2"; shift 2 ;;
+    --hermes-version) HERMES_VERSION="$2"; shift 2 ;;
+
+    -h|--help) usage ;;
+    *) echo "ERROR: Unknown arg: $1" >&2; usage ;;
+  esac
+done
+
+[[ -z "$MODE" ]] && { echo "ERROR: --save, --load or --patch required" >&2; usage; }
+OPENCLAW_VERSION="$(normalize_version_value "$OPENCLAW_VERSION")"
+HERMES_VERSION="$(normalize_version_value "$HERMES_VERSION")"
+mkdir -p "$COPY_DIR"
+
+ARCH_SUFFIX=""
+VALID_ARCHS="amd64 arm64 arm s390x ppc64le riscv64"
+
+if [[ "$MODE" == "save" ]]; then
+  [[ -z "$ARCH" ]] && { echo "ERROR: --arch required for --save (e.g. linux/arm64)" >&2; usage; }
+  ARCH_SUFFIX="${ARCH#*/}"
+  if ! echo "$VALID_ARCHS" | grep -qw "$ARCH_SUFFIX"; then
+    echo "ERROR: Invalid architecture '$ARCH_SUFFIX'" >&2
+    echo "  Valid: $VALID_ARCHS" >&2
+    exit 1
+  fi
+elif [[ "$MODE" == "load" ]]; then
+  if [[ -n "$ARCH" ]]; then
+    echo "==> --arch is ignored for --load (using archives as-is)"
+  fi
+fi
+fetch_latest_gh_version() {
+  local owner_repo="$1"
+  local tag
+  if tag="$(gh api "repos/$owner_repo/releases" \
+    --jq '[.[] | select(.prerelease == false and (.tag_name | test("beta|alpha|rc") | not)) | .tag_name] | first' \
+    2>/dev/null)"; then
+    :
+  elif tag="$(curl -sf "https://api.github.com/repos/$owner_repo/releases" \
+    | python3 -c '
+import sys, json
+for r in json.load(sys.stdin):
+    t = r["tag_name"]
+    if not r["prerelease"] and not any(x in t for x in ["beta","alpha","rc"]):
+        print(t)
+        break
+' 2>/dev/null)"; then
+    :
+  else
+    echo "ERROR: Could not fetch releases from $owner_repo" >&2
+    return 1
+  fi
+  tag="${tag#v}"
+  [[ -z "$tag" ]] && return 1
+  echo "$tag"
+}
+
+fetch_latest_dockerhub_version() {
+  local repo="$1"
+  local tag
+  if tag="$(curl -sf "https://hub.docker.com/v2/repositories/$repo/tags/?page_size=25&ordering=last_updated" \
+    | python3 -c '
+import sys, json
+data = json.load(sys.stdin)
+for t in data.get("results", []):
+    name = t["name"]
+    if name == "latest":
+        continue
+    if any(x in name for x in ["beta","alpha","rc"]):
+        continue
+    print(name)
+    break
+' 2>/dev/null)"; then
+    :
+  else
+    echo "ERROR: Could not fetch tags from Docker Hub for $repo" >&2
+    return 1
+  fi
+  tag="${tag#v}"
+  [[ -z "$tag" ]] && return 1
+  echo "$tag"
+}
+
+detect_version_from_archives() {
+  local prefix="$1"
+  local latest=""
+  local f
+
+  for dir in "$PWD" "$SCRIPT_DIR" "$SCRIPT_DIR/copy"; do
+    for f in "$dir"/${prefix}_*_v*.tar.gz; do
+      [[ -f "$f" ]] || continue
+      local base arch ver
+      base="$(basename "$f")"
+      arch="${base#${prefix}_}"
+      arch="${arch%%_v*}"
+      ver="${base#${prefix}_${arch}_v}"
+      ver="${ver%.tar.gz}"
+
+      if [[ -n "$ARCH_SUFFIX" && "$arch" != "$ARCH_SUFFIX" ]]; then
+        continue
+      fi
+
+      if [[ -z "$latest" || "$ver" > "$latest" ]]; then
+        latest="$ver"
+      fi
+    done
+  done
+
+  echo "$latest"
+}
+
+detect_image_version_from_archives() {
+  local prefix="$1"
+  local latest=""
+  local f
+
+  for dir in "$PWD" "$SCRIPT_DIR" "$SCRIPT_DIR/copy"; do
+    for f in "$dir"/${prefix}_*_v*.tar.gz; do
+      [[ -f "$f" ]] || continue
+      local base arch ver
+      base="$(basename "$f")"
+      arch="${base#${prefix}_}"
+      arch="${arch%%_v*}"
+      ver="${base#${prefix}_${arch}_v}"
+      ver="${ver%.tar.gz}"
+
+      if ! echo "$VALID_ARCHS" | grep -qw "$arch"; then
+        continue
+      fi
+
+      if [[ -n "$ARCH_SUFFIX" && "$arch" != "$ARCH_SUFFIX" ]]; then
+        continue
+      fi
+
+      if [[ -z "$latest" || "$ver" > "$latest" ]]; then
+        latest="$ver"
+      fi
+    done
+  done
+
+  echo "$latest"
+}
+
+resolve_openclaw_version() {
+  if [[ "$OPENCLAW_VERSION" == "latest" ]]; then
+    echo "latest"
+    return
+  fi
+  if [[ -z "$OPENCLAW_VERSION" ]]; then
+    if [[ "$MODE" == "save" ]]; then
+      OPENCLAW_VERSION="$(fetch_latest_gh_version "openclaw/openclaw")" || exit 1
+    else
+      OPENCLAW_VERSION="$(detect_version_from_archives "openclaw")"
+      [[ -z "$OPENCLAW_VERSION" ]] && { echo "ERROR: No openclaw archive found in current folder. Provide --openclaw-version or place archive in this folder" >&2; exit 1; }
+    fi
+  fi
+  OPENCLAW_VERSION="$(normalize_version_value "$OPENCLAW_VERSION")"
+  echo "$OPENCLAW_VERSION"
+}
+
+resolve_hermes_version() {
+  if [[ "$HERMES_VERSION" == "latest" ]]; then
+    echo "latest"
+    return
+  fi
+  if [[ -z "$HERMES_VERSION" ]]; then
+    if [[ "$MODE" == "save" ]]; then
+      HERMES_VERSION="$(fetch_latest_dockerhub_version "nousresearch/hermes-agent")" || exit 1
+    else
+      HERMES_VERSION="$(detect_version_from_archives "hermes")"
+      [[ -z "$HERMES_VERSION" ]] && { echo "WARNING: No hermes archives found" >&2; HERMES_VERSION=""; }
+    fi
+  fi
+  HERMES_VERSION="$(normalize_version_value "$HERMES_VERSION")"
+  echo "$HERMES_VERSION"
+}
+
+ask_yes_no() {
+  local prompt="$1"
+  local default="${2:-}"
+  local reply
+  local reply_lc
+  while true; do
+    read -rp "$prompt " reply
+    reply_lc="$(printf '%s' "$reply" | tr '[:upper:]' '[:lower:]')"
+    case "$reply_lc" in
+      y|yes) echo "yes"; return ;;
+      n|no)  echo "no"; return ;;
+      "")
+        if [[ -n "$default" ]]; then
+          echo "$default"; return
+        fi
+        ;;
+    esac
+    echo "  Please answer yes or no."
+  done
+}
+
+ask_choice() {
+  local prompt="$1"
+  local default_value="$2"
+  shift 2
+  local options=("$@")
+  local reply
+  local reply_lc
+  local opt_lc
+  while true; do
+    [[ -n "$prompt" ]] && echo "$prompt" >&2
+    for i in "${!options[@]}"; do
+      if [[ "${options[$i]}" == "$default_value" ]]; then
+        echo "  $((i+1))) ${options[$i]} (default)" >&2
+      else
+        echo "  $((i+1))) ${options[$i]}" >&2
+      fi
+    done
+    read -rp "Choice [1-${#options[@]}] (Enter=default $default_value): " reply
+
+    if [[ -z "$reply" ]]; then
+      printf '%s\n' "$default_value"
+      return
+    fi
+
+    if [[ "$reply" =~ ^[0-9]+$ ]] && (( reply >= 1 && reply <= ${#options[@]} )); then
+      printf '%s\n' "${options[$((reply-1))]}"
+      return
+    fi
+
+    reply_lc="$(printf '%s' "$reply" | tr '[:upper:]' '[:lower:]')"
+    for opt in "${options[@]}"; do
+      opt_lc="$(printf '%s' "$opt" | tr '[:upper:]' '[:lower:]')"
+      if [[ "$reply_lc" == "$opt_lc" ]]; then
+        printf '%s\n' "$opt"
+        return
+      fi
+    done
+
+    echo "  Invalid choice. Use number, name, or Enter for default." >&2
+  done
+}
+
+run_setup_dialog() {
+  echo ""
+  echo "======================================"
+  echo "  Airgapped Deployment - Setup"
+  echo "======================================"
+  echo ""
+
+  ENABLE_HERMES="$(ask_yes_no "Enable Hermes Agent? [yes/no]:" "yes")"
+  ENABLE_OPENCLAW="$(ask_yes_no "Enable OpenClaw? [yes/no]:" "yes")"
+
+  if [[ "$ENABLE_HERMES" == "no" && "$ENABLE_OPENCLAW" == "no" ]]; then
+    echo ""
+    echo "  No components selected. Exiting."
+    echo ""
+    exit 0
+  fi
+
+  echo ""
+  if [[ "$MODE" == "save" ]]; then
+    SAVE_ENGINE="$(ask_choice "Container engine for pulling/saving (this machine):" "docker" "docker" "podman")"
+  else
+    LOAD_ENGINE="$(ask_choice "Container engine for loading images (airgapped machine):" "docker" "docker" "podman")"
+  fi
+
+  echo ""
+  echo "  Hermes Agent:    $ENABLE_HERMES"
+  echo "  OpenClaw:        $ENABLE_OPENCLAW"
+  if [[ "$MODE" == "save" ]]; then
+    echo "  Pull engine:     $SAVE_ENGINE"
+  else
+    echo "  Load engine:     $LOAD_ENGINE"
+  fi
+  echo ""
+}
+
+run_load_setup() {
+  echo ""
+  echo "======================================"
+  echo "  Airgapped Deployment - Load"
+  echo "======================================"
+  echo ""
+
+  LOAD_ENGINE="$(ask_choice "Container engine for loading images (airgapped machine):" "docker" "docker" "podman")"
+
+  if [[ -z "$OPENCLAW_VERSION" ]]; then
+    OPENCLAW_VERSION="$(detect_image_version_from_archives "openclaw")"
+  fi
+  OPENCLAW_VERSION="$(normalize_version_value "$OPENCLAW_VERSION")"
+  if [[ -n "$OPENCLAW_VERSION" ]]; then
+    ENABLE_OPENCLAW="yes"
+  else
+    ENABLE_OPENCLAW="no"
+  fi
+
+  if [[ -z "$HERMES_VERSION" ]]; then
+    HERMES_VERSION="$(detect_image_version_from_archives "hermes")"
+  fi
+  HERMES_VERSION="$(normalize_version_value "$HERMES_VERSION")"
+  if [[ -n "$HERMES_VERSION" ]]; then
+    ENABLE_HERMES="yes"
+  else
+    ENABLE_HERMES="no"
+  fi
+
+  if [[ "$ENABLE_HERMES" == "no" && "$ENABLE_OPENCLAW" == "no" ]]; then
+    echo "ERROR: No loadable OpenClaw or Hermes image archives found" >&2
+    echo "  Expected openclaw_*_v*.tar.gz and/or hermes_*_v*.tar.gz in current folder, script folder, or ./copy" >&2
+    exit 1
+  fi
+
+  echo ""
+  echo "  Hermes Agent:    $ENABLE_HERMES${HERMES_VERSION:+ (v$HERMES_VERSION)}"
+  echo "  OpenClaw:        $ENABLE_OPENCLAW${OPENCLAW_VERSION:+ (v$OPENCLAW_VERSION)}"
+  echo "  Load engine:     $LOAD_ENGINE"
+  echo ""
+}
+
+if [[ "$MODE" == "save" ]]; then
+  run_setup_dialog
+
+  if [[ "$ENABLE_OPENCLAW" == "yes" ]]; then
+    OPENCLAW_VERSION="$(resolve_openclaw_version)"
+    echo "==> OpenClaw version: $OPENCLAW_VERSION"
+  fi
+
+  if [[ "$ENABLE_HERMES" == "yes" ]]; then
+    HERMES_VERSION="$(resolve_hermes_version)"
+    [[ -n "$HERMES_VERSION" ]] && echo "==> Hermes version: $HERMES_VERSION"
+  fi
+elif [[ "$MODE" == "load" ]]; then
+  run_load_setup
+fi
+
+check_qemu() {
+  local host_arch
+  host_arch="$(uname -m)"
+
+  case "$host_arch" in
+    x86_64) host_arch="amd64" ;;
+    aarch64) host_arch="arm64" ;;
+  esac
+
+  [[ "$host_arch" == "$ARCH_SUFFIX" ]] && return 0
+
+  echo "==> Cross-architecture detected: host=$host_arch, target=$ARCH_SUFFIX"
+  echo "    Pulling works; local run may require qemu-user-static/binfmt."
+}
+
+ensure_engine_runtime_env() {
+  local engine="$1"
+  local uid
+  uid="$(id -u)"
+
+  if [[ "$uid" != "0" ]]; then
+    if [[ -z "${XDG_RUNTIME_DIR:-}" || "${XDG_RUNTIME_DIR}" == "/run/user/0" ]]; then
+      export XDG_RUNTIME_DIR="/run/user/${uid}"
+      echo "==> Set XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR for rootless container engine"
+    fi
+  fi
+
+  if [[ "$engine" == "docker" ]]; then
+    local version_out
+    version_out="$(docker --version 2>&1 || true)"
+    if echo "$version_out" | grep -qi 'Emulate Docker CLI using podman'; then
+      echo "==> Detected docker->podman emulation"
+    fi
+  fi
+}
+
+ensure_engine_ready() {
+  local engine="$1"
+  local phase="$2"
+
+  if ! command -v "$engine" >/dev/null 2>&1; then
+    echo "ERROR: Container engine '$engine' not found for $phase" >&2
+    exit 1
+  fi
+
+  ensure_engine_runtime_env "$engine"
+
+  local err_file
+  err_file="$(mktemp)"
+  if ! "$engine" info > /dev/null 2>"$err_file"; then
+    echo "ERROR: Container engine '$engine' is not ready for $phase" >&2
+    sed -n '1,12p' "$err_file" >&2
+
+    if [[ "$engine" == "docker" ]]; then
+      local version_out
+      version_out="$(docker --version 2>&1 || true)"
+      if echo "$version_out" | grep -qi 'Emulate Docker CLI using podman'; then
+        echo "Hint: 'docker' is podman emulation on this host." >&2
+        echo "  1) Ensure a valid user session exists (/run/user/$(id -u) writable)." >&2
+        echo "  2) Or choose podman in the setup prompt." >&2
+      fi
+    fi
+
+    rm -f "$err_file"
+    exit 1
+  fi
+  rm -f "$err_file"
+}
+oc_image_file() {
+  echo "openclaw_${ARCH_SUFFIX}_v${OPENCLAW_VERSION}.tar.gz"
+}
+
+hermes_image_file() {
+  echo "hermes_${ARCH_SUFFIX}_v${HERMES_VERSION}.tar.gz"
+}
+
+copy_bundle_dir() {
+  echo "$COPY_DIR"
+}
+
+extract_helper_file() {
+  echo "extract_me_${RUN_TIMESTAMP}.tar"
+}
+oc_repo_file() {
+  echo "openclaw_github_v${OPENCLAW_VERSION}.tar.gz"
+}
+
+version_lte() {
+  local left="${1#v}"
+  local right="${2#v}"
+  [[ "$left" != "latest" && "$right" != "latest" ]] || return 1
+  [[ "$(printf '%s\n%s\n' "$left" "$right" | sort -V | head -1)" == "$left" ]]
+}
+
+openclaw_setup_patch_file() {
+  if [[ -n "$OPENCLAW_VERSION" ]] && version_lte "$OPENCLAW_VERSION" "2026.4.24"; then
+    echo "$SCRIPT_DIR/assets/setup-offline-legacy.patch"
+  else
+    echo "$SCRIPT_DIR/assets/setup-offline.patch"
+  fi
+}
+
+openclaw_repo_ref() {
+  if [[ -n "${OPENCLAW_VERSION:-}" && "${OPENCLAW_VERSION}" != "latest" ]]; then
+    echo "v${OPENCLAW_VERSION}"
+  else
+    echo "main"
+  fi
+}
+
+prepare_openclaw_tmp_repo() {
+  local desired_ref
+  local repo_dir="$SCRIPT_DIR/$TMP_DIR/openclaw"
+
+  desired_ref="$(openclaw_repo_ref)"
+  mkdir -p "$SCRIPT_DIR/$TMP_DIR"
+
+  if [[ -d "$repo_dir/.git" ]]; then
+    echo "==> Updating OpenClaw repo snapshot in $TMP_DIR/openclaw ($desired_ref)" >&2
+    git -C "$repo_dir" remote set-url origin "$OPENCLAW_REPO" >/dev/null 2>&1 || true
+    if git -C "$repo_dir" fetch --depth 1 origin "$desired_ref" >&2; then
+      git -C "$repo_dir" checkout --detach FETCH_HEAD >&2
+      git -C "$repo_dir" reset --hard FETCH_HEAD >&2
+    elif [[ "$desired_ref" != "main" ]]; then
+      echo "==> Fetch for $desired_ref failed, retrying main" >&2
+      git -C "$repo_dir" fetch --depth 1 origin main >&2
+      git -C "$repo_dir" checkout --detach FETCH_HEAD >&2
+      git -C "$repo_dir" reset --hard FETCH_HEAD >&2
+    else
+      echo "ERROR: Could not update OpenClaw repo snapshot in $repo_dir" >&2
+      exit 1
+    fi
+  else
+    rm -rf "$repo_dir"
+    echo "==> Cloning OpenClaw repo snapshot into $TMP_DIR/openclaw ($desired_ref)" >&2
+    if ! git clone --depth 1 --branch "$desired_ref" "$OPENCLAW_REPO" "$repo_dir"; then
+      if [[ "$desired_ref" != "main" ]]; then
+        echo "==> Clone for $desired_ref failed, retrying main" >&2
+        rm -rf "$repo_dir"
+        git clone --depth 1 --branch main "$OPENCLAW_REPO" "$repo_dir"
+      else
+        exit 1
+      fi
+    fi
+  fi
+
+  echo "$repo_dir"
+}
+
+ensure_openclaw_repo_archive() {
+  local target_dir="${1:-$SCRIPT_DIR}"
+  local repo_dir
+  local repo_file
+  local repo_archive
+
+  repo_file="$(oc_repo_file)"
+  repo_archive="$target_dir/$repo_file"
+  repo_dir="$(prepare_openclaw_tmp_repo)"
+
+  patch_openclaw_setup_repo "$repo_dir"
+  rm -f "$repo_dir/scripts/docker/setup.sh.bak" 2>/dev/null || true
+
+  rm -f "$repo_archive"
+  echo "==> Saving openclaw repo archive -> $repo_archive"
+  tar --exclude='openclaw/.git' --exclude='openclaw/scripts/docker/setup.sh.bak' \
+    -czf "$repo_archive" -C "$SCRIPT_DIR/$TMP_DIR" openclaw
+}
+
+CURRENT_BUNDLE_DIR=""
+
+ensure_copy_run_script() {
+  local source="$SCRIPT_DIR/assets/run.sh"
+  local target="$COPY_DIR/run.sh"
+
+  if [[ ! -f "$source" ]]; then
+    echo "ERROR: run helper missing at $source" >&2
+    exit 1
+  fi
+
+  cp -f "$source" "$target"
+  chmod +x "$target"
+}
+
+create_copy_bundle() {
+  local bundle_dir
+  local stage_dir
+  local helper_tar
+
+  bundle_dir="$COPY_DIR"
+  helper_tar="$(extract_helper_file)"
+
+  mkdir -p "$COPY_DIR"
+  find "$COPY_DIR" -mindepth 1 -maxdepth 1 ! -name '*.tar' ! -name '*.tar.gz' ! -name 'run.sh' -exec rm -rf -- {} +
+  rm -f "$COPY_DIR"/extract_me.tar "$COPY_DIR"/extract_me_*.tar 2>/dev/null || true
+  ensure_copy_run_script
+
+  stage_dir="$(mktemp -d)"
+  cp -f "$SCRIPT_DIR/airgapped.sh" "$stage_dir/airgapped.sh"
+  if [[ -d "$SCRIPT_DIR/assets" ]]; then
+    mkdir -p "$stage_dir/assets"
+    cp -a "$SCRIPT_DIR/assets/." "$stage_dir/assets/"
+    rm -f "$stage_dir/assets/run.sh"
+    if [[ -f "$stage_dir/assets/hermes-docker-compose.yml" ]]; then
+      ln -s "assets/hermes-docker-compose.yml" "$stage_dir/hermes-docker-compose.yml"
+    fi
+  fi
+
+  tar -cf "$bundle_dir/$helper_tar" -C "$stage_dir" .
+  rm -rf "$stage_dir"
+
+  CURRENT_BUNDLE_DIR="$bundle_dir"
+  echo "==> Created helper archive -> $bundle_dir/$helper_tar"
+  echo "==> Created copy bundle -> $bundle_dir"
+}
+
+ledger_contains() {
+  local entry="$1"
+  [[ -f "$LEDGER_FILE" ]] && grep -qxF "$entry" "$LEDGER_FILE"
+}
+
+ledger_add() {
+  local entry="$1"
+  mkdir -p "$(dirname "$LEDGER_FILE")"
+  echo "$entry" >> "$LEDGER_FILE"
+}
+
+get_deployed_version() {
+  local component="$1"
+  if [[ -f "$DEPLOYED_FILE" ]]; then
+    grep "^${component}:" "$DEPLOYED_FILE" 2>/dev/null | tail -1 | awk -F: '{print $NF}'
+  fi
+}
+
+set_deployed_version() {
+  local component="$1"
+  local version="$2"
+  mkdir -p "$(dirname "$DEPLOYED_FILE")"
+  if [[ -f "$DEPLOYED_FILE" ]]; then
+    sed -i "/^${component}:/d" "$DEPLOYED_FILE"
+  fi
+  echo "${component}:${version}" >> "$DEPLOYED_FILE"
+}
+
+cleanup_remove_image_refs() {
+  local engine="$1"
+  shift
+  local removed=0
+  local ref
+  for ref in "$@"; do
+    [[ -n "$ref" ]] || continue
+    if "$engine" image inspect "$ref" >/dev/null 2>&1; then
+      if "$engine" rmi -f "$ref" >/dev/null 2>&1; then
+        echo "  removed: $ref"
+        removed=$((removed + 1))
+      fi
+    fi
+  done
+  echo "  total removed images: $removed"
+}
+
+cleanup_collect_candidate_refs() {
+  local engine="$1"
+  "$engine" images --format '{{.Repository}}:{{.Tag}}' 2>/dev/null \
+    | awk '!seen[$0]++' \
+    | sed '/^<none>:<none>$/d'
+}
+
+ensure_openclaw_tags_from_version() {
+  local engine="$1"
+  local source_ref="${2:-}"
+  local version_tag="${3:-}"
+
+  local latest_ref="openclaw:local"
+  local latest_localhost="localhost/openclaw:local"
+  local version_ref="openclaw:${version_tag}"
+  local version_localhost="localhost/openclaw:${version_tag}"
+
+  if [[ -n "$source_ref" ]] && "$engine" image inspect "$source_ref" >/dev/null 2>&1; then
+    [[ -n "$version_tag" ]] && "$engine" tag "$source_ref" "$version_ref" >/dev/null 2>&1 || true
+    "$engine" tag "$source_ref" "$latest_ref" >/dev/null 2>&1 || true
+  fi
+
+  if [[ -n "$version_tag" ]] && "$engine" image inspect "$version_ref" >/dev/null 2>&1; then
+    "$engine" tag "$version_ref" "$latest_ref" >/dev/null 2>&1 || true
+    "$engine" tag "$version_ref" "$latest_localhost" >/dev/null 2>&1 || true
+    "$engine" tag "$version_ref" "$version_localhost" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  if "$engine" image inspect "$latest_ref" >/dev/null 2>&1; then
+    "$engine" tag "$latest_ref" "$latest_localhost" >/dev/null 2>&1 || true
+    [[ -n "$version_tag" ]] && "$engine" tag "$latest_ref" "$version_ref" >/dev/null 2>&1 || true
+    [[ -n "$version_tag" ]] && "$engine" tag "$latest_ref" "$version_localhost" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  if "$engine" image inspect "$latest_localhost" >/dev/null 2>&1; then
+    "$engine" tag "$latest_localhost" "$latest_ref" >/dev/null 2>&1 || true
+    [[ -n "$version_tag" ]] && "$engine" tag "$latest_localhost" "$version_ref" >/dev/null 2>&1 || true
+    [[ -n "$version_tag" ]] && "$engine" tag "$latest_localhost" "$version_localhost" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  return 1
+}
+
+ensure_hermes_tags_from_version() {
+  local engine="$1"
+  local source_ref="${2:-}"
+  local version_tag="${3:-}"
+
+  local repo_short="${HERMES_REGISTRY#docker.io/}"
+  local latest_ref="${repo_short}:latest"
+  local latest_localhost="localhost/${repo_short}:latest"
+  local version_ref="${repo_short}:${version_tag}"
+  local version_localhost="localhost/${repo_short}:${version_tag}"
+
+  if [[ -n "$source_ref" ]] && "$engine" image inspect "$source_ref" >/dev/null 2>&1; then
+    [[ -n "$version_tag" ]] && "$engine" tag "$source_ref" "$version_ref" >/dev/null 2>&1 || true
+    "$engine" tag "$source_ref" "$latest_ref" >/dev/null 2>&1 || true
+  fi
+
+  if [[ -n "$version_tag" ]] && "$engine" image inspect "$version_ref" >/dev/null 2>&1; then
+    "$engine" tag "$version_ref" "$latest_ref" >/dev/null 2>&1 || true
+    "$engine" tag "$version_ref" "$latest_localhost" >/dev/null 2>&1 || true
+    "$engine" tag "$version_ref" "$version_localhost" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  return 1
+}
+
+offer_cleanup_after_save() {
+  local engine="$SAVE_ENGINE"
+  if [[ ! -t 0 ]]; then
+    echo ""
+    echo "==> Cleanup option skipped (non-interactive shell)"
+    return
+  fi
+
+  echo ""
+  local answer
+  answer="$(ask_yes_no "Cleanup now? Remove local OpenClaw/Hermes images and dangling layers on this machine? [yes/no]:" "no")"
+  if [[ "$answer" != "yes" ]]; then
+    echo "==> Cleanup skipped"
+    return
+  fi
+
+  local -a refs_to_remove=()
+  local ref
+  while IFS= read -r ref; do
+    [[ -n "$ref" ]] || continue
+    case "$ref" in
+      openclaw:local|localhost/openclaw:local|openclaw:v*|localhost/openclaw:v*|${OPENCLAW_REGISTRY}:*|ghcr.io/openclaw/openclaw:*|openclaw/openclaw:*|${HERMES_REGISTRY#docker.io/}:latest|localhost/${HERMES_REGISTRY#docker.io/}:latest|${HERMES_REGISTRY#docker.io/}:v*|localhost/${HERMES_REGISTRY#docker.io/}:v*|${HERMES_REGISTRY}:*|${HERMES_REGISTRY#docker.io/}:*|nousresearch/hermes-agent:*)
+        refs_to_remove+=("$ref")
+        ;;
+    esac
+  done < <(cleanup_collect_candidate_refs "$engine")
+
+  echo "==> Cleanup (${engine}): removing OpenClaw/Hermes images"
+  cleanup_remove_image_refs "$engine" "${refs_to_remove[@]}"
+
+  echo "==> Pruning dangling image layers"
+  "$engine" image prune -f >/dev/null 2>&1 || true
+}
+
+ensure_openclaw_repo_for_patch() {
+  local repo_dir="$SCRIPT_DIR/openclaw"
+  local desired_ref
+  desired_ref="$(openclaw_repo_ref)"
+
+  if [[ ! -d "$repo_dir" ]]; then
+    echo "==> openclaw/ not found, cloning ${OPENCLAW_REPO} (${desired_ref})"
+    if ! git clone --depth 1 --branch "$desired_ref" "$OPENCLAW_REPO" "$repo_dir"; then
+      if [[ "$desired_ref" != "main" ]]; then
+        echo "==> Clone for ${desired_ref} failed, retrying main"
+        if [[ -d "$repo_dir/.git" ]]; then
+          git -C "$repo_dir" fetch --depth 1 origin main
+          git -C "$repo_dir" checkout -B main origin/main
+        else
+          echo "ERROR: Could not clone openclaw repository. Partial directory at $repo_dir" >&2
+          echo "  Remove that directory manually and retry." >&2
+          exit 1
+        fi
+      else
+        exit 1
+      fi
+    fi
+  fi
+}
+
+ensure_setup_force_recreate() {
+  local setup_file="$1"
+
+  if grep -q 'up -d --force-recreate openclaw-gateway' "$setup_file" 2>/dev/null; then
+    return
+  fi
+
+  if grep -q 'up -d openclaw-gateway' "$setup_file" 2>/dev/null; then
+    sed -i 's/up -d openclaw-gateway/up -d --force-recreate openclaw-gateway/' "$setup_file"
+    echo "  Enabled force-recreate for openclaw-gateway startup"
+  fi
+}
+
+make_setup_verbose() {
+  local setup_file="$1"
+
+  sed -i -E \
+    -e 's/[[:space:]]*>[[:space:]]*\/dev\/null[[:space:]]*2>&1//g' \
+    -e 's/[[:space:]]*&>[[:space:]]*\/dev\/null//g' \
+    -e 's/[[:space:]]*2>[[:space:]]*\/dev\/null//g' \
+    -e 's/[[:space:]]*1>[[:space:]]*\/dev\/null//g' \
+    -e 's/[[:space:]]*>[[:space:]]*\/dev\/null//g' \
+    "$setup_file"
+}
+
+patch_openclaw_setup_repo() {
+  local repo_dir="$1"
+  local setup_file="$repo_dir/scripts/docker/setup.sh"
+  local patch_file
+  patch_file="$(openclaw_setup_patch_file)"
+
+  if [[ ! -f "$setup_file" ]]; then
+    echo "ERROR: setup.sh not found at $setup_file" >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$patch_file" ]]; then
+    echo "ERROR: Patch file not found at $patch_file" >&2
+    exit 1
+  fi
+
+  if grep -Eq 'offline mode, skipping build|already exists locally, skipping build' "$setup_file" 2>/dev/null; then
+    ensure_setup_force_recreate "$setup_file"
+    make_setup_verbose "$setup_file"
+    echo "==> setup.sh already patched"
+    return
+  fi
+
+  echo "==> Patching setup.sh with $(basename "$patch_file")"
+  cp "$setup_file" "${setup_file}.bak"
+
+  if patch --forward --directory="$repo_dir" -p1 < "$patch_file"; then
+    ensure_setup_force_recreate "$setup_file"
+    make_setup_verbose "$setup_file"
+    echo "  Patched successfully"
+    return
+  fi
+
+  echo "==> Retrying patch with fuzzy context matching (-F3)"
+  if patch --forward --fuzz=3 --directory="$repo_dir" -p1 < "$patch_file"; then
+    ensure_setup_force_recreate "$setup_file"
+    make_setup_verbose "$setup_file"
+    echo "  Patched successfully (fuzzy match)"
+    return
+  fi
+
+  if patch --reverse --dry-run --directory="$repo_dir" -p1 < "$patch_file" >/dev/null 2>&1; then
+    ensure_setup_force_recreate "$setup_file"
+    make_setup_verbose "$setup_file"
+    echo "==> setup.sh already patched"
+    cp "${setup_file}.bak" "$setup_file"
+    return
+  fi
+
+  echo "ERROR: Patch failed. New upstream version?" >&2
+  echo "  Backup at: ${setup_file}.bak" >&2
+  echo "  Patch file: $patch_file" >&2
+  cp "${setup_file}.bak" "$setup_file"
+  exit 1
+}
+
+patch_setup() {
+  ensure_openclaw_repo_for_patch
+  patch_openclaw_setup_repo "$SCRIPT_DIR/openclaw"
+}
+
+do_save() {
+  ensure_engine_ready "$SAVE_ENGINE" "--save"
+  create_copy_bundle
+
+  local bundle_dir="$CURRENT_BUNDLE_DIR"
+
+  if [[ "$ENABLE_OPENCLAW" == "yes" ]]; then
+    local oc_file oc_archive oc_ledger oc_version_tag
+    oc_file="$(oc_image_file)"
+    oc_archive="$bundle_dir/$oc_file"
+    oc_ledger="openclaw:${OPENCLAW_VERSION}:${ARCH_SUFFIX}"
+    oc_version_tag="v${OPENCLAW_VERSION}"
+
+    local oc_ready=false
+    if $SAVE_ENGINE image inspect "openclaw:${oc_version_tag}" >/dev/null 2>&1; then
+      ensure_openclaw_tags_from_version "$SAVE_ENGINE" "openclaw:${oc_version_tag}" "$oc_version_tag" || true
+      oc_ready=true
+    elif $SAVE_ENGINE image inspect "localhost/openclaw:${oc_version_tag}" >/dev/null 2>&1; then
+      ensure_openclaw_tags_from_version "$SAVE_ENGINE" "localhost/openclaw:${oc_version_tag}" "$oc_version_tag" || true
+      oc_ready=true
+    fi
+
+    if [[ "$oc_ready" == true ]]; then
+      echo "==> Reusing local OpenClaw image (no pull): openclaw:$oc_version_tag / openclaw:local"
+    else
+      local oc_pull_tag oc_pull_image
+      if [[ "$OPENCLAW_VERSION" == "latest" ]]; then
+        oc_pull_tag="latest"
+      else
+        oc_pull_tag="${OPENCLAW_VERSION}-slim-${ARCH_SUFFIX}"
+      fi
+      oc_pull_image="${OPENCLAW_REGISTRY}:${oc_pull_tag}"
+
+      echo "==> Pulling openclaw: $oc_pull_image (platform $ARCH)"
+      $SAVE_ENGINE pull --platform "$ARCH" "$oc_pull_image"
+      ensure_openclaw_tags_from_version "$SAVE_ENGINE" "$oc_pull_image" "$oc_version_tag" || true
+    fi
+
+    if ! $SAVE_ENGINE image inspect "openclaw:local" >/dev/null 2>&1; then
+      echo "ERROR: openclaw:local missing after prepare step" >&2
+      exit 1
+    fi
+
+    if [[ -f "$oc_archive" ]]; then
+      echo "==> OpenClaw archive already present, skipping export: $(basename "$oc_archive")"
+    else
+      echo "==> Saving openclaw image -> $oc_archive"
+      $SAVE_ENGINE save "openclaw:local" | gzip > "$oc_archive"
+    fi
+
+    ensure_openclaw_repo_archive "$bundle_dir"
+
+    if ! ledger_contains "$oc_ledger"; then
+      ledger_add "$oc_ledger"
+    fi
+  else
+    echo "==> OpenClaw: disabled, skipping"
+  fi
+
+  if [[ "$ENABLE_HERMES" == "yes" && -n "$HERMES_VERSION" ]]; then
+    local hermes_file hermes_archive hermes_ledger hermes_tag hermes_repo_short hermes_save_ref
+    hermes_file="$(hermes_image_file)"
+    hermes_archive="$bundle_dir/$hermes_file"
+    hermes_ledger="hermes:${HERMES_VERSION}:${ARCH_SUFFIX}"
+
+    if [[ "$HERMES_VERSION" == "latest" ]]; then
+      hermes_tag="latest"
+    else
+      hermes_tag="v${HERMES_VERSION}"
+    fi
+    hermes_repo_short="${HERMES_REGISTRY#docker.io/}"
+    hermes_save_ref="${hermes_repo_short}:${hermes_tag}"
+
+    local hermes_ready=false
+    if $SAVE_ENGINE image inspect "${hermes_repo_short}:${hermes_tag}" >/dev/null 2>&1; then
+      ensure_hermes_tags_from_version "$SAVE_ENGINE" "${hermes_repo_short}:${hermes_tag}" "$hermes_tag" || true
+      hermes_ready=true
+    elif $SAVE_ENGINE image inspect "${HERMES_REGISTRY}:${hermes_tag}" >/dev/null 2>&1; then
+      ensure_hermes_tags_from_version "$SAVE_ENGINE" "${HERMES_REGISTRY}:${hermes_tag}" "$hermes_tag" || true
+      hermes_ready=true
+    elif $SAVE_ENGINE image inspect "localhost/${hermes_repo_short}:${hermes_tag}" >/dev/null 2>&1; then
+      ensure_hermes_tags_from_version "$SAVE_ENGINE" "localhost/${hermes_repo_short}:${hermes_tag}" "$hermes_tag" || true
+      hermes_ready=true
+    fi
+
+    if [[ "$hermes_ready" == true ]]; then
+      echo "==> Reusing local Hermes image (no pull): ${hermes_repo_short}:latest / ${hermes_repo_short}:${hermes_tag}"
+    else
+      local hermes_pull_image
+      hermes_pull_image="${HERMES_REGISTRY}:${hermes_tag}"
+      echo "==> Pulling hermes: $hermes_pull_image (platform $ARCH)"
+      $SAVE_ENGINE pull --platform "$ARCH" "$hermes_pull_image"
+      ensure_hermes_tags_from_version "$SAVE_ENGINE" "$hermes_pull_image" "$hermes_tag" || true
+    fi
+
+    if ! $SAVE_ENGINE image inspect "$hermes_save_ref" >/dev/null 2>&1; then
+      echo "ERROR: $hermes_save_ref missing after prepare step" >&2
+      exit 1
+    fi
+
+    if [[ -f "$hermes_archive" ]]; then
+      echo "==> Hermes archive already present, skipping export: $(basename "$hermes_archive")"
+    else
+      echo "==> Saving hermes image -> $hermes_archive"
+      $SAVE_ENGINE save "$hermes_save_ref" | gzip > "$hermes_archive"
+    fi
+
+    if ! ledger_contains "$hermes_ledger"; then
+      ledger_add "$hermes_ledger"
+    fi
+  else
+    [[ "$ENABLE_HERMES" == "yes" ]] && echo "==> Hermes: could not determine version, skipping"
+    [[ "$ENABLE_HERMES" != "yes" ]] && echo "==> Hermes Agent: disabled, skipping"
+  fi
+
+  check_qemu
+
+  echo "==> Bundle files:"
+  ls -lh "$bundle_dir"
+  echo ""
+  local helper_tar
+  helper_tar="$(extract_helper_file)"
+  echo "Copy this ./copy directory to the airgapped machine (contains run.sh, $helper_tar + image archives):"
+  echo "  $bundle_dir"
+  echo "Then run:"
+  echo "  cd $bundle_dir"
+  echo "  ./run.sh"
+
+  offer_cleanup_after_save
+}
+do_load() {
+  ensure_engine_ready "$LOAD_ENGINE" "--load"
+
+  find_file() {
+    local pattern="$1"
+    local found=""
+    for dir in "$PWD" "$SCRIPT_DIR" "$SCRIPT_DIR/copy"; do
+      found="$(compgen -G "$dir/$pattern" 2>/dev/null | head -1)" && break
+    done
+    echo "$found"
+  }
+
+  if [[ "$ENABLE_OPENCLAW" == "yes" ]]; then
+    local deployed_oc
+    deployed_oc="$(get_deployed_version "openclaw")"
+    local oc_image_tar
+    local oc_version_tag="v${OPENCLAW_VERSION}"
+
+    [[ -n "$deployed_oc" && "$deployed_oc" == "$OPENCLAW_VERSION" ]] \
+      && echo "==> OpenClaw v$OPENCLAW_VERSION already recorded as loaded; verifying image tags and repo archive anyway"
+    oc_image_tar="$(find_file "openclaw_*_v${OPENCLAW_VERSION}.tar.gz")"
+
+    if ensure_openclaw_tags_from_version "$LOAD_ENGINE" "" "$oc_version_tag"; then
+      echo "==> openclaw image already present; ensured openclaw:local and openclaw:$oc_version_tag tags, skipping image load"
+    else
+      if [[ -n "$oc_image_tar" && -f "$oc_image_tar" ]]; then
+        echo "==> Loading openclaw image from $oc_image_tar"
+        gunzip -c "$oc_image_tar" | $LOAD_ENGINE load
+      else
+        echo "ERROR: No openclaw image tar found (expected openclaw_*_v${OPENCLAW_VERSION}.tar.gz)" >&2
+        exit 1
+      fi
+
+      if ensure_openclaw_tags_from_version "$LOAD_ENGINE" "" "$oc_version_tag"; then
+        echo "==> openclaw local image available (openclaw:local + openclaw:$oc_version_tag)"
+      else
+        echo "ERROR: Could not prepare required openclaw tags (openclaw:local and openclaw:$oc_version_tag)" >&2
+        exit 1
+      fi
+    fi
+
+    if [[ ! -d "$SCRIPT_DIR/openclaw" ]]; then
+      local oc_repo_tar
+      oc_repo_tar="$(find_file "openclaw_github_v${OPENCLAW_VERSION}.tar.gz")"
+      if [[ -n "$oc_repo_tar" && -f "$oc_repo_tar" ]]; then
+        echo "==> Extracting openclaw repo from $oc_repo_tar"
+        tar -xzf "$oc_repo_tar" -C "$SCRIPT_DIR"
+      else
+        echo "ERROR: Missing openclaw repo archive openclaw_github_v${OPENCLAW_VERSION}.tar.gz" >&2
+        exit 1
+      fi
+    fi
+
+    set_deployed_version "openclaw" "$OPENCLAW_VERSION"
+  else
+    echo "==> OpenClaw: disabled, skipping"
+  fi
+
+  if [[ "$ENABLE_HERMES" == "yes" && -n "$HERMES_VERSION" ]]; then
+    local deployed_hermes
+    deployed_hermes="$(get_deployed_version "hermes")"
+
+    if [[ -n "$deployed_hermes" && "$deployed_hermes" == "$HERMES_VERSION" ]]; then
+      echo "==> Hermes v$HERMES_VERSION already deployed, no update needed"
+    else
+      local hermes_tar
+      hermes_tar="$(find_file "hermes_*_v${HERMES_VERSION}.tar.gz")"
+
+      local hermes_tag
+      if [[ "$HERMES_VERSION" == "latest" ]]; then
+        hermes_tag="latest"
+      else
+        hermes_tag="v${HERMES_VERSION}"
+      fi
+      local hermes_source_ref="${HERMES_REGISTRY}:${hermes_tag}"
+
+      if ensure_hermes_tags_from_version "$LOAD_ENGINE" "$hermes_source_ref" "$hermes_tag"; then
+        echo "==> hermes image already present (${HERMES_REGISTRY#docker.io/}:$hermes_tag), skipping image load"
+      else
+        if [[ -n "$hermes_tar" && -f "$hermes_tar" ]]; then
+          echo "==> Loading hermes image from $hermes_tar"
+          gunzip -c "$hermes_tar" | $LOAD_ENGINE load
+        else
+          echo "WARNING: No hermes image tar found (expected hermes_*_v${HERMES_VERSION}.tar.gz)"
+        fi
+
+        if ensure_hermes_tags_from_version "$LOAD_ENGINE" "$hermes_source_ref" "$hermes_tag"; then
+          echo "==> hermes local image available (${HERMES_REGISTRY#docker.io/}:latest + ${HERMES_REGISTRY#docker.io/}:$hermes_tag)"
+        else
+          echo "ERROR: Could not prepare required hermes tags (${HERMES_REGISTRY#docker.io/}:latest and :$hermes_tag)" >&2
+          exit 1
+        fi
+      fi
+
+      set_deployed_version "hermes" "$HERMES_VERSION"
+    fi
+  else
+    echo "==> Hermes Agent: disabled, skipping"
+  fi
+
+  echo ""
+  echo "==> Images in engine:"
+  $LOAD_ENGINE images | grep -E "(openclaw|hermes)" || true
+
+  if [[ "$ENABLE_OPENCLAW" == "yes" ]]; then
+    echo ""
+    echo "==> Manual next step (not run by airgapped.sh):"
+    echo "  cd $SCRIPT_DIR/openclaw"
+    echo "  OPENCLAW_IMAGE=openclaw:local bash scripts/docker/setup.sh --offline"
+  fi
+}
+case "$MODE" in
+  save) do_save ;;
+  load) do_load ;;
+  patch) patch_setup ;;
+esac

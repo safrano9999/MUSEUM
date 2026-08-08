@@ -1,0 +1,12 @@
+schema_version = 1
+
+[module]
+name = "naturalgrounding"
+group = "PUBLIC"
+kind = "repo"
+source = "https://github.com/safrano9999/NaturalGrounding-Tiktok-Ying-Video-Manager.git"
+target_dir = "NaturalGrounding-Tiktok-Ying-Video-Manager"
+description = "NaturalGrounding TikTok video manager"
+default_selected = true
+runtime_ref = "CONTAINER/runtime.toml"
+module_ref = "CONTAINER/module.toml"

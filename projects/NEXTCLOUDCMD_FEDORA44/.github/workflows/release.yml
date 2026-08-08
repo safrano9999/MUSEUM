@@ -1,0 +1,61 @@
+name: Build Fedora 44 bundle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+      - BUNDLE_REVISION
+      - Containerfile
+      - scripts/**
+      - .github/workflows/release.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - id: meta
+        name: Resolve version
+        shell: bash
+        run: |
+          echo "version=$(<VERSION)" >> "$GITHUB_OUTPUT"
+          echo "revision=$(<BUNDLE_REVISION)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and export tested bundle
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Containerfile
+          target: artifact
+          build-args: |
+            NEXTCLOUD_VERSION=${{ steps.meta.outputs.version }}
+          outputs: type=local,dest=dist
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify artifact
+        run: |
+          unzip -t dist/nextcloudcmd-fedora44-x86_64.zip
+          (cd dist && sha256sum -c nextcloudcmd-fedora44-x86_64.zip.sha256)
+          du -h dist/*
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          REVISION: ${{ steps.meta.outputs.revision }}
+        run: |
+          tag="v${VERSION}-fedora44.${REVISION}"
+          gh release delete "$tag" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$tag" dist/* \
+            --title "nextcloudcmd ${VERSION} for Fedora 44" \
+            --notes "Headless nextcloudcmd ${VERSION}, dynamically bundled and smoke-tested on Fedora 44." \
+            --latest

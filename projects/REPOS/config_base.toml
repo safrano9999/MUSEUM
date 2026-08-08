@@ -1,0 +1,52 @@
+schema_version = 1
+
+[base]
+image = "quay.io/fedora/fedora:43"
+requirements = [
+  "supervisor",
+  "python3",
+  "python3-pip",
+  "curl",
+  "openssl",
+  "iproute",
+  "procps-ng",
+  "git",
+]
+
+[naming]
+adjectives = [
+  "brisk",
+  "calm",
+  "clever",
+  "fuzzy",
+  "lively",
+  "nimble",
+  "quiet",
+  "rapid",
+  "steady",
+  "witty"
+]
+animals = [
+  "otter",
+  "lynx",
+  "falcon",
+  "badger",
+  "fox",
+  "wolf",
+  "panda",
+  "raven",
+  "stoat",
+  "tiger"
+]
+
+[container]
+prefix = "repos-"
+registry = "localhost"
+network = "host"
+include_thirdparty = true
+
+[modules]
+exclude = "3RDPARTY_DEPENDENCIES"
+
+[volumes]
+paths = ["/etc/supervisor/conf.d"]

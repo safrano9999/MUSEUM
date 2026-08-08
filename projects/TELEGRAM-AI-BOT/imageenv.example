@@ -1,0 +1,7 @@
+# cp imageenv.example .imageenv
+# Image generation API keys — fill in at least one key to enable /imagine and image tool calling.
+
+DALLE_API_KEY=sk-...           # OpenAI DALL-E 3 (same value as your OPENAI_API_KEY)
+STABILITY_API_KEY=sk-...       # Stability AI (stable-diffusion-xl)
+REPLICATE_API_KEY=r8_...       # Replicate (Flux Schnell / SDXL)
+FAL_API_KEY=...                # fal.ai (Flux Schnell)

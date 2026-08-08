@@ -1,0 +1,10 @@
+schema_version = 1
+
+[module]
+name = "pvdach"
+group = "PRIVATE"
+kind = "repo"
+source = "https://github.com/safrano9999/PV_D-A-CH.git"
+target_dir = "PV_D-A-CH"
+description = "PV_D-A-CH private service"
+default_selected = true

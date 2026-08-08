@@ -1,0 +1,30 @@
+{
+  "version": "2026-02-13",
+  "notes": "Example custom rules (replace with real addresses).",
+  "rules": [
+    {
+      "name": "system_senders_custom",
+      "folder": "Systemmeldungen",
+      "priority": 55,
+      "match": {
+        "sender_domains": [
+          "alerts@example.com",
+          "noreply@cloud.example",
+          "status@infra.example"
+        ]
+      }
+    },
+    {
+      "name": "newsletter_custom_senders",
+      "folder": "newsletter",
+      "priority": 75,
+      "match": {
+        "sender_emails": [
+          "news@sample.com",
+          "updates@vendor.example",
+          "events@newsletter.example"
+        ]
+      }
+    }
+  ]
+}

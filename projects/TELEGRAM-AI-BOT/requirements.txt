@@ -1,0 +1,4 @@
+litellm
+requests
+tavily-python
+ddgs

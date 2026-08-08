@@ -1,0 +1,18 @@
+[Unit]
+Description=CLAWBRIDGE — Telegram bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rafael
+WorkingDirectory=/home/rafael/github/CLAWBRIDGE
+ExecStart=/home/rafael/github/CLAWBRIDGE/bin/bot_service.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=clawbridge-bot
+
+[Install]
+WantedBy=multi-user.target

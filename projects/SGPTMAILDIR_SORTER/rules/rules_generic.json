@@ -1,0 +1,79 @@
+{
+  "version": "2026-02-13",
+  "notes": "Generic rules. Folder names must match maildir folder name (e.g., bezahlt, freitag).",
+  "rules": [
+    {
+      "name": "AGB",
+      "folder": "AGB",
+      "priority": 10,
+      "match": {
+        "keywords": ["agb", "terms", "bedingungen", "policy", "datenschutz", "privacy", "nutzungsbedingungen", "leistungsänderung", "service change"]
+      }
+    },
+    {
+      "name": "bezahlt",
+      "folder": "bezahlt",
+      "priority": 20,
+      "match": {
+        "keywords": ["bezahlt", "zahlung erhalten", "zahlungseingang", "quittung", "receipt", "paid", "settled", "payment received", "abbuchung", "lastschrift", "successful charge"]
+      }
+    },
+    {
+      "name": "Freitag",
+      "folder": "Freitag",
+      "priority": 30,
+      "match": {
+        "keywords": ["rechnung", "invoice", "fällig", "zahlbar", "due date", "payment due", "zahlungserinnerung", "mahnung", "iban", "überweisen"]
+      }
+    },
+    {
+      "name": "loeschen",
+      "folder": "loeschen",
+      "priority": 40,
+      "match": {
+        "keywords": ["login", "sign-in", "verification code", "otp", "security", "suspicious", "passwort zurücksetzen", "password reset", "2fa", "one-time"]
+      }
+    },
+    {
+      "name": "welcome",
+      "folder": "welcome",
+      "priority": 50,
+      "match": {
+        "keywords": ["welcome", "activate", "confirm your email", "verify your email", "invitation", "einladung", "konto aktivieren"]
+      }
+    },
+    {
+      "name": "Systemmeldungen",
+      "folder": "Systemmeldungen",
+      "priority": 60,
+      "match": {
+        "keywords": ["usage limits", "product update", "api", "quota", "status", "oauth", "service alert"]
+      }
+    },
+    {
+      "name": "Kommunikation",
+      "folder": "Kommunikation",
+      "priority": 70,
+      "match": {
+        "keywords": ["antwort", "reply", "re:", "fw:", "fwd:", "danke", "fragen"],
+        "exclude_keywords": ["unsubscribe", "list-unsubscribe", "view in browser"]
+      }
+    },
+    {
+      "name": "newsletter",
+      "folder": "newsletter",
+      "priority": 80,
+      "match": {
+        "keywords": ["list-unsubscribe", "unsubscribe", "view in browser", "webinar", "sale", "release", "update", "digest"]
+      }
+    },
+    {
+      "name": "uncertain",
+      "folder": "sort_ai_uncertain",
+      "priority": 100,
+      "match": {
+        "keywords": []
+      }
+    }
+  ]
+}

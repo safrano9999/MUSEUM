@@ -1,0 +1,124 @@
+{
+  "account": "gmail",
+  "root": "../Mail/gmail",
+  "count": 21,
+  "folders": [
+    {
+      "name": "Archive",
+      "maildir_path": "Archive",
+      "imap_path": "Archive"
+    },
+    {
+      "name": "INBOX",
+      "maildir_path": "INBOX",
+      "imap_path": "INBOX",
+      "is_source": true
+    },
+    {
+      "name": "Archiv",
+      "maildir_path": "INBOX.Archiv",
+      "imap_path": "INBOX/Archiv"
+    },
+    {
+      "name": "AGB",
+      "maildir_path": "INBOX.Archiv.AGB",
+      "imap_path": "INBOX/Archiv/AGB",
+      "is_destination": true
+    },
+    {
+      "name": "Kommunikation",
+      "maildir_path": "INBOX.Archiv.Kommunikation",
+      "imap_path": "INBOX/Archiv/Kommunikation",
+      "is_destination": true
+    },
+    {
+      "name": "Systemmeldungen",
+      "maildir_path": "INBOX.Archiv.Systemmeldungen",
+      "imap_path": "INBOX/Archiv/Systemmeldungen",
+      "is_destination": true
+    },
+    {
+      "name": "bezahlt",
+      "maildir_path": "INBOX.Archiv.bezahlt",
+      "imap_path": "INBOX/Archiv/bezahlt",
+      "is_destination": true
+    },
+    {
+      "name": "gesendet",
+      "maildir_path": "INBOX.Archiv.gesendet",
+      "imap_path": "INBOX/Archiv/gesendet",
+      "is_destination": true
+    },
+    {
+      "name": "newsletter",
+      "maildir_path": "INBOX.Archiv.newsletter",
+      "imap_path": "INBOX/Archiv/newsletter",
+      "is_destination": true
+    },
+    {
+      "name": "welcome",
+      "maildir_path": "INBOX.Archiv.welcome",
+      "imap_path": "INBOX/Archiv/welcome",
+      "is_destination": true
+    },
+    {
+      "name": "Freitag",
+      "maildir_path": "INBOX.Freitag",
+      "imap_path": "INBOX/Freitag",
+      "is_destination": true
+    },
+    {
+      "name": "NO_AI",
+      "maildir_path": "INBOX.NO_AI",
+      "imap_path": "INBOX/NO_AI"
+    },
+    {
+      "name": "backup_20260212_1619",
+      "maildir_path": "INBOX.backup_20260212_1619",
+      "imap_path": "INBOX/backup_20260212_1619"
+    },
+    {
+      "name": "loeschen",
+      "maildir_path": "INBOX.loeschen",
+      "imap_path": "INBOX/loeschen",
+      "is_destination": true
+    },
+    {
+      "name": "sort_ai_correction",
+      "maildir_path": "INBOX.sort_ai_correction",
+      "imap_path": "INBOX/sort_ai_correction",
+      "is_source": true
+    },
+    {
+      "name": "sort_ai_uncertain",
+      "maildir_path": "INBOX.sort_ai_uncertain",
+      "imap_path": "INBOX/sort_ai_uncertain",
+      "is_fallback": true
+    },
+    {
+      "name": "Spam",
+      "maildir_path": "Spam",
+      "imap_path": "Spam"
+    },
+    {
+      "name": "Entw&APw-rfe",
+      "maildir_path": "[Gmail].Entw&APw-rfe",
+      "imap_path": "[Gmail]/Entw&APw-rfe"
+    },
+    {
+      "name": "Gesendet",
+      "maildir_path": "[Gmail].Gesendet",
+      "imap_path": "[Gmail]/Gesendet"
+    },
+    {
+      "name": "Papierkorb",
+      "maildir_path": "[Gmail].Papierkorb",
+      "imap_path": "[Gmail]/Papierkorb"
+    },
+    {
+      "name": "Spam",
+      "maildir_path": "[Gmail].Spam",
+      "imap_path": "[Gmail]/Spam"
+    }
+  ]
+}

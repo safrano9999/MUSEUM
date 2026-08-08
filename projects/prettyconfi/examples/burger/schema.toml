@@ -1,0 +1,247 @@
+schema_version = 1
+schema_name = "burger-builder"
+schema_scope = "module"
+schema_order = 1
+
+# --- Bun ---
+
+[[fields]]
+key = "BUN_TYPE"
+type = "choice"
+choices = ["classic", "sesame", "brioche", "pretzel", "lettuce-wrap"]
+default = "sesame"
+label = "Bun Type"
+help = "Choose your bun"
+required = true
+group = "bun"
+order = 1
+
+[[fields]]
+key = "BUN_TOASTED"
+type = "bool"
+default = true
+label = "Toasted?"
+group = "bun"
+order = 2
+
+# --- Patty ---
+
+[[fields]]
+key = "PATTY_TYPE"
+type = "choice"
+choices = ["beef", "chicken", "veggie", "fish", "double-beef"]
+default = "beef"
+label = "Patty"
+help = "Choose your patty"
+required = true
+group = "patty"
+order = 10
+
+[[fields]]
+key = "PATTY_DONENESS"
+type = "choice"
+choices = ["rare", "medium-rare", "medium", "well-done"]
+default = "medium"
+label = "Doneness"
+group = "patty"
+order = 11
+when = { key = "PATTY_TYPE", in = ["beef", "double-beef"] }
+
+# --- Cheese ---
+
+[[fields]]
+key = "ADD_CHEESE"
+type = "bool"
+default = true
+label = "Add Cheese?"
+group = "toppings"
+order = 20
+
+[[fields]]
+key = "CHEESE_TYPE"
+type = "choice"
+choices = ["cheddar", "swiss", "american", "gouda", "blue-cheese"]
+default = "cheddar"
+label = "Cheese Type"
+group = "toppings"
+order = 21
+when = { key = "ADD_CHEESE", truthy = true }
+
+# --- Toppings ---
+
+[[fields]]
+key = "ADD_PICKLES"
+type = "bool"
+default = true
+label = "Pickles"
+group = "toppings"
+order = 22
+
+[[fields]]
+key = "ADD_ONIONS"
+type = "bool"
+default = true
+label = "Onions"
+group = "toppings"
+order = 23
+
+[[fields]]
+key = "ADD_TOMATO"
+type = "bool"
+default = true
+label = "Tomato"
+group = "toppings"
+order = 24
+
+[[fields]]
+key = "ADD_LETTUCE"
+type = "bool"
+default = true
+label = "Lettuce"
+group = "toppings"
+order = 25
+
+[[fields]]
+key = "ADD_JALAPENOS"
+type = "bool"
+default = false
+label = "Jalapenos"
+help = "Spicy!"
+group = "toppings"
+order = 26
+
+# --- Sauces ---
+
+[[fields]]
+key = "SAUCE_KETCHUP"
+type = "bool"
+default = true
+label = "Ketchup"
+group = "sauces"
+order = 30
+
+[[fields]]
+key = "SAUCE_MUSTARD"
+type = "bool"
+default = false
+label = "Mustard"
+group = "sauces"
+order = 31
+
+[[fields]]
+key = "SAUCE_MAYO"
+type = "bool"
+default = false
+label = "Mayo"
+group = "sauces"
+order = 32
+
+[[fields]]
+key = "SAUCE_BBQ"
+type = "bool"
+default = false
+label = "BBQ Sauce"
+group = "sauces"
+order = 33
+
+[[fields]]
+key = "SAUCE_SPECIAL"
+type = "bool"
+default = false
+label = "Special Sauce"
+help = "Our secret recipe"
+group = "sauces"
+order = 34
+
+# --- Sides ---
+
+[[fields]]
+key = "ADD_FRIES"
+type = "bool"
+default = false
+label = "Add Fries?"
+group = "sides"
+order = 40
+
+[[fields]]
+key = "FRIES_SIZE"
+type = "choice"
+choices = ["small", "medium", "large"]
+default = "medium"
+label = "Fries Size"
+group = "sides"
+order = 41
+when = { key = "ADD_FRIES", truthy = true }
+
+[[fields]]
+key = "FRIES_SAUCE_KETCHUP"
+type = "bool"
+default = true
+label = "Ketchup with Fries"
+group = "sides"
+order = 42
+when = { key = "ADD_FRIES", truthy = true }
+
+[[fields]]
+key = "FRIES_SAUCE_MAYO"
+type = "bool"
+default = false
+label = "Mayo with Fries"
+group = "sides"
+order = 43
+when = { key = "ADD_FRIES", truthy = true }
+
+# --- Drink ---
+
+[[fields]]
+key = "ADD_DRINK"
+type = "bool"
+default = false
+label = "Add a Drink?"
+group = "drink"
+order = 50
+
+[[fields]]
+key = "DRINK_TYPE"
+type = "choice"
+choices = ["coca-cola", "fanta", "sprite", "water", "iced-tea", "milkshake"]
+default = "coca-cola"
+label = "Drink"
+group = "drink"
+order = 51
+when = { key = "ADD_DRINK", truthy = true }
+
+[[fields]]
+key = "DRINK_SIZE"
+type = "choice"
+choices = ["small", "medium", "large"]
+default = "medium"
+label = "Drink Size"
+group = "drink"
+order = 52
+when = { key = "ADD_DRINK", truthy = true }
+
+[[fields]]
+key = "MILKSHAKE_FLAVOR"
+type = "choice"
+choices = ["vanilla", "chocolate", "strawberry", "oreo"]
+default = "vanilla"
+label = "Milkshake Flavor"
+group = "drink"
+order = 53
+when = [
+    { key = "ADD_DRINK", truthy = true },
+    { key = "DRINK_TYPE", eq = "milkshake" },
+]
+
+# --- Customer ---
+
+[[fields]]
+key = "CUSTOMER_NAME"
+type = "str"
+default = ""
+label = "Your Name"
+help = "For the order"
+required = true
+group = "order"
+order = 60

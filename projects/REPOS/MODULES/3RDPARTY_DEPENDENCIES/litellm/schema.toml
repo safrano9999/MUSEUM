@@ -1,0 +1,248 @@
+schema_version = 1
+schema_name = "litellm"
+schema_scope = "global"
+schema_order = 50
+
+[[fields]]
+key = "LITELLM_MODE"
+type = "choice"
+choices = ["sdk", "proxy"]
+default = "proxy"
+label = "LiteLLM backend"
+help = "SDK = lokaler Proxy, Proxy = externer Endpunkt"
+required = true
+scope = "global"
+group = "litellm"
+order = 1
+triggered_by = ["napoleon", "jugo", "pvdach", "litellm"]
+
+[[fields]]
+key = "LITELLM_LOCAL_PORT"
+type = "port"
+default = 4000
+label = "LiteLLM Local Port"
+scope = "global"
+group = "litellm"
+order = 2
+triggered_by = ["napoleon", "jugo", "pvdach", "litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "OPENAI_API_BASE"
+type = "str"
+default = "http://127.0.0.1:4000/v1"
+label = "OPENAI_API_BASE (LiteLLM URL)"
+help = "URL zum LiteLLM Proxy"
+required = true
+scope = "global"
+group = "litellm"
+order = 3
+triggered_by = ["napoleon", "jugo", "pvdach", "litellm"]
+when = { key = "LITELLM_MODE", eq = "proxy" }
+
+[[fields]]
+key = "OPENAI_API_KEY"
+type = "str"
+default = ""
+label = "OpenAI API Key"
+help = "Proxy bearer key"
+scope = "global"
+group = "litellm"
+order = 4
+triggered_by = ["napoleon", "jugo", "pvdach", "litellm"]
+when = { key = "LITELLM_MODE", eq = "proxy" }
+retry_on_no = 3
+retry_prompt = "API Key wird fuer externe Modelle benoetigt. Wirklich ohne?"
+
+[[fields]]
+key = "DEFAULT_MODEL"
+type = "str"
+default = "openai/gpt-5.4"
+label = "Default Model"
+help = "Unified default model"
+scope = "global"
+group = "litellm"
+order = 5
+triggered_by = ["napoleon", "jugo", "pvdach", "litellm"]
+
+# --- Provider keys (local/SDK mode) ---
+
+[[fields]]
+key = "OPENAI_API_KEY"
+type = "str"
+default = ""
+label = "OpenAI Provider Key"
+help = "OpenAI provider key fuer lokalen SDK-Modus"
+scope = "global"
+group = "litellm-providers"
+order = 10
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "ANTHROPIC_API_KEY"
+type = "str"
+default = ""
+label = "Anthropic API Key"
+help = "Anthropic provider key"
+scope = "global"
+group = "litellm-providers"
+order = 11
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "GEMINI_API_KEY"
+type = "str"
+default = ""
+label = "Gemini API Key"
+help = "Google Gemini provider key"
+scope = "global"
+group = "litellm-providers"
+order = 12
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "XAI_API_KEY"
+type = "str"
+default = ""
+label = "xAI API Key"
+help = "xAI/Grok provider key"
+scope = "global"
+group = "litellm-providers"
+order = 13
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "GROQ_API_KEY"
+type = "str"
+default = ""
+label = "Groq API Key"
+help = "Groq provider key"
+scope = "global"
+group = "litellm-providers"
+order = 14
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "MISTRAL_API_KEY"
+type = "str"
+default = ""
+label = "Mistral API Key"
+help = "Mistral provider key"
+scope = "global"
+group = "litellm-providers"
+order = 15
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "COHERE_API_KEY"
+type = "str"
+default = ""
+label = "Cohere API Key"
+help = "Cohere provider key"
+scope = "global"
+group = "litellm-providers"
+order = 16
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "DEEPSEEK_API_KEY"
+type = "str"
+default = ""
+label = "DeepSeek API Key"
+help = "DeepSeek provider key"
+scope = "global"
+group = "litellm-providers"
+order = 17
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "PERPLEXITY_API_KEY"
+type = "str"
+default = ""
+label = "Perplexity API Key"
+help = "Perplexity provider key"
+scope = "global"
+group = "litellm-providers"
+order = 18
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "OPENROUTER_API_KEY"
+type = "str"
+default = ""
+label = "OpenRouter API Key"
+help = "OpenRouter provider key"
+scope = "global"
+group = "litellm-providers"
+order = 19
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "ZAI_API_KEY"
+type = "str"
+default = ""
+label = "Z.AI API Key"
+help = "Z.AI provider key"
+scope = "global"
+group = "litellm-providers"
+order = 20
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "AZURE_OPENAI_API_KEY"
+type = "str"
+default = ""
+label = "Azure OpenAI API Key"
+help = "Azure OpenAI provider key"
+scope = "global"
+group = "litellm-providers"
+order = 21
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "CEREBRAS_API_KEY"
+type = "str"
+default = ""
+label = "Cerebras API Key"
+help = "Cerebras provider key"
+scope = "global"
+group = "litellm-providers"
+order = 22
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "KILOCODE_API_KEY"
+type = "str"
+default = ""
+label = "KiloCode API Key"
+help = "KiloCode provider key"
+scope = "global"
+group = "litellm-providers"
+order = 23
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }
+
+[[fields]]
+key = "OLLAMA_API_BASE"
+type = "str"
+default = "http://127.0.0.1:11434"
+label = "Ollama Base URL"
+help = "Ollama base URL"
+scope = "global"
+group = "litellm-providers"
+order = 24
+triggered_by = ["litellm"]
+when = { key = "LITELLM_MODE", eq = "sdk" }

@@ -1,0 +1,17 @@
+[Unit]
+Description=CLAWBRIDGE — inotify dispatcher + Telegram bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/github/CLAWBRIDGE
+ExecStart=%h/github/CLAWBRIDGE/bin/clawbridge.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=clawbridge
+
+[Install]
+WantedBy=default.target

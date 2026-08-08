@@ -1,0 +1,56 @@
+[Unit]
+Description=CITADELPRIVATE (max persistence, host network)
+
+[Container]
+ContainerName=CITADELPRIVATE
+Image=localhost/citadelprivate:latest
+Network=host
+# Bridge mode alternative (leave commented for host networking)
+# PublishPort=9443:9443
+# PublishPort=8080:8080
+# PublishPort=820:820
+# PublishPort=840:840
+# PublishPort=7700:7700
+
+# Tailscale + networking capabilities
+AddCapability=NET_ADMIN
+AddCapability=NET_RAW
+AddDevice=/dev/net/tun
+
+# Runtime env
+Environment=PV_CREDS_FILE=/run/secrets/pv_creds
+Environment=OPENAI_API_BASE=http://127.0.0.1:4000/v1
+Environment=DB_HOST=127.0.0.1
+Environment=DEFAULT_MODEL=openai/gpt-5.4
+Environment=PV_DACH_PORT=8080
+Environment=CODEANALYST_PORT=820
+Environment=JUGO_PORT=840
+Environment=NAPOLEON_PORT=7700
+Environment=HTTPS_PORT=9443
+Environment=ENABLE_PV_DACH=1
+Environment=ENABLE_CODEANALYST=1
+Environment=ENABLE_JUGO=1
+Environment=ENABLE_NAPOLEON=1
+Environment=TS_HOSTNAME=
+Environment=TS_AUTHKEY=
+
+# Read-only credentials mount from host
+Volume=/srv/shared/openclaw/.PV:/run/secrets/pv_creds:ro,Z
+
+# Maximum persistence profile (excluding /tmp, /proc, /run by request)
+Volume=citadelprivate-etc:/etc:Z
+Volume=citadelprivate-bin:/bin:Z
+Volume=citadelprivate-sbin:/sbin:Z
+Volume=citadelprivate-usr:/usr:Z
+Volume=citadelprivate-var:/var:Z
+Volume=citadelprivate-opt:/opt:Z
+Volume=citadelprivate-root:/root:Z
+Volume=citadelprivate-home:/home:Z
+Volume=citadelprivate-srv:/srv:Z
+
+[Service]
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

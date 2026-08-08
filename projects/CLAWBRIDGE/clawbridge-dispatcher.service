@@ -1,0 +1,18 @@
+[Unit]
+Description=CLAWBRIDGE — inotify dispatcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rafael
+WorkingDirectory=/home/rafael/github/CLAWBRIDGE
+ExecStart=/home/rafael/github/CLAWBRIDGE/bin/dispatcher.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=clawbridge-dispatcher
+
+[Install]
+WantedBy=multi-user.target

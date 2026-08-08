@@ -1,0 +1,10 @@
+schema_version = 1
+
+[module]
+name = "codeanalyst"
+group = "PUBLIC"
+kind = "repo"
+source = "https://github.com/safrano9999/CODEANALYST.git"
+target_dir = "CODEANALYST"
+description = "CODEANALYST web scanner"
+default_selected = true

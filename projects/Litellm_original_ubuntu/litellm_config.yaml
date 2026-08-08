@@ -1,0 +1,13 @@
+general_settings:
+  master_key: "CHANGE_ME_MASTER_KEY"
+  database_url: "postgresql://litellm:litellm_password@host.containers.internal:5432/litellm"
+
+litellm_settings:
+  drop_params: true
+  num_retries: 3
+
+model_list:
+  - model_name: claude-sonnet
+    litellm_params:
+      model: anthropic/claude-sonnet-4-20250514
+      api_key: "os.environ/ANTHROPIC_API_KEY"

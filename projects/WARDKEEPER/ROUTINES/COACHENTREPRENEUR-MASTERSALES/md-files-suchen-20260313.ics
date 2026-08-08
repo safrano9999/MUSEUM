@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Operator//WARDKEEPER//DE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Vienna:20260313T100000
+DTEND;TZID=Europe/Vienna:20260313T180000
+SUMMARY:Marketing-Tag – MD Files suchen (Warum-Motivation)
+DESCRIPTION:Auf den Handys und Servern nach den MD Files suchen, ansonsten neue anfangen.\nProjekt: COACHENTREPRENEUR-MASTERSALES | Next Step ID: 1.1.10.1.1
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,26 @@
+{
+  "name": "calendar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "calendar:init": "./CALENDAR_init.sh",
+    "add:calendar": "./CALENDAR_init.sh --new",
+    "setup:python": "./scripts/setup-python.sh",
+    "check": "./scripts/check.sh"
+  },
+  "dependencies": {},
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.5.12-beta.1",
+      "minGatewayVersion": "2026.5.12-beta.1"
+    },
+    "build": {
+      "openclawVersion": "2026.5.12-beta.1",
+      "pluginSdkVersion": "2026.5.12-beta.1"
+    }
+  }
+}

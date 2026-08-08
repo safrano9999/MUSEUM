@@ -1,0 +1,106 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "scout",
+        "workspace": "/home/USER/.openclaw/workspace/agents/scout/",
+        "model": "anthropic/claude-haiku-4-5-20251001"
+      },
+      {
+        "id": "strategist",
+        "workspace": "/home/USER/.openclaw/workspace/agents/strategist/",
+        "model": "anthropic/claude-sonnet-4-6"
+      },
+      {
+        "id": "writer",
+        "workspace": "/home/USER/.openclaw/workspace/agents/writer/",
+        "model": "anthropic/claude-sonnet-4-6"
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "agentId": "scout",
+      "match": { "channel": "telegram", "accountId": "scout" }
+    },
+    {
+      "agentId": "strategist",
+      "match": { "channel": "telegram", "accountId": "strategist" }
+    },
+    {
+      "agentId": "writer",
+      "match": { "channel": "telegram", "accountId": "writer" }
+    }
+  ],
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "defaultAccount": "strategist",
+      "accounts": {
+        "scout": {
+          "botToken": "PULSE_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_SIGNALS": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        },
+        "strategist": {
+          "botToken": "FORGE_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_STRATEGY": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        },
+        "writer": {
+          "botToken": "ECHO_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_DRAFTS": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        }
+      }
+    }
+  }
+}

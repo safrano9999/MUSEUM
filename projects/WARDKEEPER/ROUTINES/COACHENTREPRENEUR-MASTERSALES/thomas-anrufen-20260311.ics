@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Operator//WARDKEEPER//DE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Vienna:20260311T190000
+DTEND;TZID=Europe/Vienna:20260311T200000
+SUMMARY:Thomas anrufen – Lekker Anbindung
+DESCRIPTION:Mit Thomas telefonieren. Boni, Zusätze, Ontop und Overhead für alle Zeiträume ansprechen.\n⚠️ Abhängig vom Gewerbeschein (18:00 Termin). Verschieben falls nötig.\nProjekt: COACHENTREPRENEUR-MASTERSALES | Next Step IDs: 1.1.7.1.1 + 1.1.8.1.1
+END:VEVENT
+END:VCALENDAR

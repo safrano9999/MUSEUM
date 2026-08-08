@@ -1,0 +1,26 @@
+services:
+  sgptmaildir:
+    image: docker.io/daxpro/sgptmaildir_sorter:latest
+    container_name: sgptmaildir_sorter
+    working_dir: /app
+    environment:
+      # API key(s) – set in .env
+      # Use SGPT_API_KEY for non-OpenAI providers; falls back to OPENAI_API_KEY
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SGPT_API_KEY=${SGPT_API_KEY:-}
+    volumes:
+      # persistent maildir + pdf outputs
+      - maildata:/app/Mail
+      - logsdata:/app/LOGS
+      - ./ZEROINBOX:/app/ZEROINBOX
+      # configs (bind mounts)
+      - ./offlineimaprc:/app/offlineimaprc:ro
+      - ./rules/rules_custom.json:/app/rules/rules_custom.json:ro
+      - ./mirror_dir_gmail.json:/app/mirror_dir_gmail.json:ro
+      # sgpt config – model + api_base_url live here
+      - ./sgpt_config.yaml:/app/sgpt_config.yaml:ro
+    command: ["/bin/bash", "-lc", "bin/mail_sync.sh gmail && bin/email_sort.sh gmail"]
+
+volumes:
+  maildata:
+  logsdata:

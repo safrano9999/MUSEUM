@@ -1,0 +1,3 @@
+# cp botenv.example botenv
+BOT_TOKEN=your_bot_token_from_botfather
+CHAT_ID=your_telegram_chat_id

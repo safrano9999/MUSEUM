@@ -1,0 +1,136 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "librarian",
+        "workspace": "/home/USER/.openclaw/workspace/agents/librarian/",
+        "model": "anthropic/claude-haiku-4-5-20251001"
+      },
+      {
+        "id": "critic",
+        "workspace": "/home/USER/.openclaw/workspace/agents/critic/",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      {
+        "id": "curator",
+        "workspace": "/home/USER/.openclaw/workspace/agents/curator/",
+        "model": "anthropic/claude-sonnet-4-6"
+      },
+      {
+        "id": "researcher",
+        "workspace": "/home/USER/.openclaw/workspace/agents/researcher/",
+        "model": "anthropic/claude-sonnet-4-6"
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "agentId": "librarian",
+      "match": { "channel": "telegram", "accountId": "librarian" }
+    },
+    {
+      "agentId": "critic",
+      "match": { "channel": "telegram", "accountId": "critic" }
+    },
+    {
+      "agentId": "curator",
+      "match": { "channel": "telegram", "accountId": "curator" }
+    },
+    {
+      "agentId": "researcher",
+      "match": { "channel": "telegram", "accountId": "researcher" }
+    }
+  ],
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "defaultAccount": "curator",
+      "accounts": {
+        "librarian": {
+          "botToken": "LIBRARIAN_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_PORTFOLIO": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        },
+        "critic": {
+          "botToken": "CRITIC_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_REVIEW": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        },
+        "curator": {
+          "botToken": "CURATOR_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_DECISIONS": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        },
+        "researcher": {
+          "botToken": "RESEARCHER_BOT_TOKEN",
+          "dmPolicy": "pairing",
+          "groups": {
+            "GROUP_ID": {
+              "enabled": true,
+              "groupPolicy": "open",
+              "requireMention": true,
+              "topics": {
+                "TOPIC_RESEARCH": {
+                  "enabled": true,
+                  "groupPolicy": "open",
+                  "requireMention": false
+                }
+              }
+            }
+          },
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": ["HUMAN_TELEGRAM_USER_ID"],
+          "streaming": "off"
+        }
+      }
+    }
+  }
+}

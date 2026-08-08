@@ -1,0 +1,23 @@
+{
+  "id": "serbia",
+  "name": "serbia",
+  "workspace": "/home/openclaw/.openclaw/workspace-serbia",
+  "agentDir": "/home/openclaw/.openclaw/agents/serbia/agent",
+  "identity": {
+    "emoji": "🇷🇸"
+  },
+  "tools": {
+    "allow": [
+      "session_status",
+      "exec"
+    ],
+    "deny": [
+      "codex__codex"
+    ],
+    "exec": {
+      "host": "gateway",
+      "security": "allowlist",
+      "ask": "off"
+    }
+  }
+}

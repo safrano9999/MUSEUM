@@ -1,0 +1,9 @@
+{
+  "calenvPath": ".env",
+  "timezone": "Europe/Vienna",
+  "emptyMessage": "📭 Keine Termine im Zeitfenster.",
+  "webhook": {
+    "enabled": true,
+    "path": "/plugins/calendar/run"
+  }
+}

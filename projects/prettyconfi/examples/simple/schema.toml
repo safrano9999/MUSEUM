@@ -1,0 +1,67 @@
+schema_version = 1
+schema_name = "simple-app"
+schema_scope = "module"
+schema_order = 10
+
+[[fields]]
+key = "APP_NAME"
+type = "str"
+default = "my-app"
+label = "Application Name"
+required = true
+group = "general"
+order = 1
+
+[[fields]]
+key = "APP_PORT"
+type = "port"
+default = 8080
+label = "Application Port"
+required = true
+group = "general"
+order = 2
+
+[[fields]]
+key = "DEBUG"
+type = "bool"
+default = false
+label = "Enable Debug Mode"
+group = "general"
+order = 3
+
+[[fields]]
+key = "LOG_LEVEL"
+type = "choice"
+choices = ["debug", "info", "warning", "error"]
+default = "info"
+label = "Log Level"
+group = "general"
+order = 4
+when = { key = "DEBUG", truthy = true }
+
+[[fields]]
+key = "USE_DATABASE"
+type = "bool"
+default = true
+label = "Enable Database"
+group = "database"
+order = 10
+
+[[fields]]
+key = "DB_HOST"
+type = "str"
+default = "localhost"
+label = "Database Host"
+required = true
+group = "database"
+order = 11
+when = { key = "USE_DATABASE", truthy = true }
+
+[[fields]]
+key = "DB_PORT"
+type = "port"
+default = 5432
+label = "Database Port"
+group = "database"
+order = 12
+when = { key = "USE_DATABASE", truthy = true }

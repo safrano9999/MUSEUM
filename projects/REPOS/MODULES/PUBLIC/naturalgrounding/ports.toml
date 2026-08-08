@@ -1,0 +1,6 @@
+schema_version = 1
+
+[ports]
+entries = [
+  { env_key = "NATURALGROUNDING_PORT", default = 850, publish = true },
+]

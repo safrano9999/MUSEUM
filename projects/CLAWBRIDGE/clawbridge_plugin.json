@@ -1,0 +1,15 @@
+{
+  "plugin": "clawbridge",
+  "description": "CLAWBRIDGE core jobs",
+  "jobs": {
+    "pull_all": {
+      "description": "Pull all git repos",
+      "allowed_actors": ["CLAUDE", "CRON"],
+      "script": "./bin/pull_all.sh",
+      "feedback": {
+        "on_success": "✅ Pull done — see log for details",
+        "on_error":   "❌ Pull completed with errors — see log"
+      }
+    }
+  }
+}

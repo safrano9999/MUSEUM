@@ -1,0 +1,8 @@
+schema_version = 1
+
+[module]
+name = "caddy"
+group = "3RDPARTY_DEPENDENCIES"
+kind = "feature"
+description = "Caddy reverse proxy"
+default_selected = true

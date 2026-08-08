@@ -1,0 +1,69 @@
+EMAILS_OpenAI_07 – Sorting Blueprint (12 Feb 2026)
+
+SCOPE
+- Account: gmail
+- Maildir root: Mail/gmail/
+- Active sources per run: INBOX.sort_ai_correction/cur (always first), then INBOX/new, then INBOX/cur.
+- Moves are destructive (mv). No copies, backups, or sync.
+- Use the lock file `email_sort.lock` to avoid clashes with the hourly cron sync.
+- After each mv, immediately run `ls` on source + destination; if the file still exists in its source, repeat the mv until it disappears.
+- Finish only when all three sources contain zero files, then run `offlineimap -c offlineimaprc -v -a gmail`.
+- Every run writes one log at `LOGS/$TIMESTAMP.md` with summaries + mv directives.
+- For concrete sender/domain heuristics, consult `Filter_Emails_DB.txt` (JSON knowledge base).
+
+RUN FLOW
+0. **Acquire lock:**
+   ```bash
+   LOCK_FILE=/home/rafael/OPENCLAW_FUNKTIONEN/email_sort.lock
+   echo $$ > "$LOCK_FILE"
+   ```
+   (Keep it until the very end. Remove it after offlineimap completes.)
+1. **Correction pool first:** For each file in INBOX.sort_ai_correction/cur, review prior context via `grep -R "<filename>" /home/rafael/OPENCLAW_FUNKTIONEN/LOGS` and apply the rules.
+2. Count files in correction + INBOX/new + INBOX/cur. If total == 0 ⇒ log "SKIP (alle Quellen leer)", **run offlineimap anyway**, remove lock, stop.
+3. Otherwise process every file sequentially (correction → new → cur):
+   a. Parse headers/body (From, Subject, Date, List-Unsubscribe, human vs automation signals).
+   b. Log a 3-sentence summary (from, from_email, date, time, content recap, CTA; include unsubscribe link if present).
+   c. Choose destination via RULE TREE below. Keep the subfolder consistent with the source (correction behaves like cur; items from new land in destination/new).
+   d. `mv SOURCE DEST`.
+   e. `ls SOURCE` (must fail) and `ls DEST | grep FILENAME` (must succeed). Retry mv if needed.
+   f. Append `- action: mv SOURCE -> DEST` to the log.
+4. After all files processed, log final counts for correction/new/cur (should all be 0).
+5. **Run IMAP sync:**
+   ```bash
+   FLAG=true offlineimap -v -a gmail
+   ```
+   Append output summary (success/failure) to the log if available.
+6. Remove the lock file:
+   ```bash
+   rm -f "$LOCK_FILE"
+   ```
+
+RULE TREE (apply in order; first match wins)
+1. **AGB / Leistungsänderung** – policy, terms, service-change notices → /home/rafael/Mail/gmail/INBOX.Archiv.AGB/
+2. **Zahlungs-Bestätigung** – successful charges, receipts, auto-pay confirmations → .../INBOX.Archiv.bezahlt/
+3. **Offene Forderung / Fehlerhafte Zahlung** – overdue, invoices due, failed payments, reminders → .../INBOX.Freitag/
+4. **Login / Security / OTP** – sign-in alerts, verification codes, OAuth approvals, suspicious login, password resets → .../INBOX.loeschen/
+5. **Welcome / Account Activation** – onboarding, “confirm your email”, invitations → .../INBOX.Archiv.welcome/
+6. **System-/Provider-Meldungen** – infrastructure/API status updates, quota/limit notices, automated service alerts (see `Filter_Emails_DB.txt` → `system_sender_domains`, `system_keywords`). → /home/rafael/Mail/gmail/INBOX.Archiv.Systemmeldungen/
+7. **Human ↔ Human Kommunikation** – ONLY genuine personal exchanges (no unsubscribe/footer, conversational tone, manual replies). If any automation hints appear, do not use this rule. → /home/rafael/Mail/gmail/INBOX.Archiv.Kommunikation/
+8. **Newsletter / Automatisierte Kampagnen (DEFAULT)** – marketing blasts, promos, release notes, event invites, digests, autoresponders (use `Filter_Emails_DB.txt` → `newsletter_senders`, `newsletter_keywords`). → /home/rafael/Mail/gmail/INBOX.Archiv.newsletter/
+9. **Fallback** – if uncertain and nothing fits, place in /home/rafael/Mail/gmail/INBOX.sort_ai_uncertain/.
+
+GUIDANCE
+- Newsletter indicators: List-Unsubscribe, tracking links, noreply/marketing domains, view-in-browser wording.
+- System indicators: quota/usage notices, API updates, service status, automated provider mailboxes.
+- True communication is rare; require absence of unsubscribe + explicit conversational context.
+
+LOG FORMAT EXAMPLE
+```
+## Subject Line (Service)
+- from: Example Sender
+- from_email: sender@example.com
+- date: Wed, 12 Feb 2026
+- time: 15:05:12 +0000
+- summary: Satz 1 … Satz 2 … Satz 3 … (inkl. CTA). Unsubscribe-Link nennen, falls vorhanden.
+- unsubscribe: <link or n/a>
+- action: mv /home/.../INBOX/cur/<filename> -> /home/.../INBOX.Archiv.newsletter/cur/
+```
+
+END OF FILE

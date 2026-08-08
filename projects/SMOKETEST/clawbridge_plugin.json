@@ -1,0 +1,19 @@
+{
+  "plugin": "smoketest",
+  "description": "Smoke test — verifies CLAWBRIDGE job dispatch end-to-end",
+  "commands": {
+    "smoketest": {
+      "description": "Append a timestamped line to smoketest.log",
+      "mode": "job",
+      "job": "smoketest",
+      "reply_before": "🔧 Running smoke test..."
+    }
+  },
+  "jobs": {
+    "smoketest": {
+      "description": "Append timestamp to smoketest.log",
+      "allowed_actors": ["TELEGRAM", "CLAUDE", "CRON"],
+      "script": "./bin/smoketest.sh"
+    }
+  }
+}
