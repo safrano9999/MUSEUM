@@ -1,0 +1,109 @@
+# OpenClaw plugins container
+# =============================================================================
+# Bundles DAILYNEWS, NEXTCLOUD, ZEROINBOX, NOTE, CITADEL and KACHELMANN into
+# the public ephemeral OpenClaw gateway image. Native and repeated OpenAI-v1
+# providers are discovered from injected runtime environment variables.
+#
+# Base:    public openclaw-ephemeral image with pinned OpenClaw 2026.7.1.
+# Boot:    inherited openclaw-ephemeral run contract
+#          (pre-config hooks -> ephemeral config -> post-config hooks
+#           -> pre-gateway hooks -> gateway)
+# Context: build helpers and the runtime rootfs live below ./image.
+# =============================================================================
+
+ARG OPENCLAW_EPHEMERAL_IMAGE=ghcr.io/safrano9999/openclaw-ephemeral:latest
+FROM ${OPENCLAW_EPHEMERAL_IMAGE}
+ARG SAFRANO9999_SOURCE_KEY
+
+LABEL org.opencontainers.image.title="safrano9999-openclaw" \
+      org.opencontainers.image.description="OpenClaw gateway bundled with DAILYNEWS, NEXTCLOUD, ZEROINBOX, NOTE, CITADEL and KACHELMANN with localhost and Tailscale providers." \
+      org.opencontainers.image.source="https://github.com/safrano9999/fedora-ai-safrano9999"
+
+# --- system layer (root) -----------------------------------------------------
+# Root installs the additional packages and runs tailscaled at runtime
+# (NET_ADMIN + /dev/net/tun).
+USER root
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Runtime tooling. GitHub CLI lives in its own apt repository.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+ && install -d -m 0755 /etc/apt/keyrings \
+ && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      -o /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+ && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+ && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+      git gh tmux wget less vim-tiny nano \
+      jq ripgrep fd-find unzip xz-utils file \
+      python3 python3-pip \
+      iproute2 iputils-ping dnsutils procps net-tools lsof \
+ && rm -rf /var/lib/apt/lists/*
+
+# Tailscale daemon + CLI (official install script adds the apt repo).
+RUN curl -fsSL https://tailscale.com/install.sh | sh \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- shared Python requirements ----------------------------------------------
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+COPY requirements.txt /requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r /requirements.txt
+
+# --- plugins: install into OpenClaw -------------------------------------------
+ENV OPENCLAW_CONFIG_DIR=/root/.openclaw
+ENV OPENCLAW_PLUGINS_DIR=/root/.openclaw/extensions
+ENV ZEROINBOX_DIR=/root/.openclaw/extensions/zeroinbox
+ENV SAFRANO9999_STAGE_DIR=/tmp/safrano9999-plugins
+LABEL io.safrano9999.source-tags.sha256="${SAFRANO9999_SOURCE_KEY}"
+COPY image/build.d/lib/safrano9999_plugins.py /usr/local/bin/safrano9999_plugins.py
+COPY image/build.d/lib/safrano9999_container.sh /usr/local/lib/safrano9999_container.sh
+COPY .safrano9999-source-tags.tsv /README/safrano9999-source-tags.tsv
+COPY safrano9999/*.zip safrano9999/*.zip.sha256 ${SAFRANO9999_STAGE_DIR}/
+
+RUN bash -lc 'set -eux; \
+    mkdir -p "$OPENCLAW_CONFIG_DIR"; \
+    chmod +x /usr/local/lib/safrano9999_container.sh; \
+    . /usr/local/lib/safrano9999_container.sh; \
+    safrano9999_OC_plugins CITADEL; \
+    for root in "$OPENCLAW_PLUGINS_DIR/citadel"; do \
+      [ -d "$root/extensions/enabled" ] || continue; \
+      mkdir -p "$root/extensions/disabled"; \
+      for provider in cloudflare subnet; do \
+        [ ! -d "$root/extensions/enabled/$provider" ] \
+          || mv "$root/extensions/enabled/$provider" "$root/extensions/disabled/$provider"; \
+      done; \
+    done; \
+    safrano9999_OC_plugins --fullrun \
+      DAILYNEWS NEXTCLOUD ZEROINBOX KACHELMANN; \
+    rm -rf "$SAFRANO9999_STAGE_DIR"'
+
+# Gateway runs as root (so tailscaled can run); state lives under /root.
+ENV HOME=/root \
+    OPENCLAW_CONFIG=${OPENCLAW_CONFIG_DIR}/openclaw.json \
+    OPENCLAW_GATEWAY_PORT=18789 \
+    TS_STATE_DIR=/var/lib/tailscale \
+    OPENCLAW_DISABLE_BONJOUR=1
+
+EXPOSE 18789
+
+# Liveness against the gateway's own health endpoint.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
+  CMD curl -fsS "http://127.0.0.1:${OPENCLAW_GATEWAY_PORT}/healthz" >/dev/null || exit 1
+
+# --- runtime config + inherited lifecycle hooks -----------------------------
+# Keep these final so service-only edits rebuild only the small tail layers.
+COPY image/runtime.d/rootfs/ /
+RUN chmod 0755 \
+      /usr/local/bin/safrano9999-openclaw-configure \
+      /usr/local/bin/tailscale-state-up.sh \
+      /usr/local/bin/safrano9999-routines \
+      /usr/local/bin/named_volume_links.sh \
+      /usr/local/bin/openclaw-crontabs \
+      /usr/local/bin/openclaw-allow-all \
+      /usr/local/share/openclaw-ephemeral/runtime.d/pre-config.d/*.sh \
+      /usr/local/share/openclaw-ephemeral/runtime.d/post-config.d/*.sh \
+      /usr/local/share/openclaw-ephemeral/runtime.d/pre-gateway.d/*.sh \
+ && mkdir -p "$OPENCLAW_CONFIG_DIR" /var/lib/tailscale

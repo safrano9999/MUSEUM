@@ -1,0 +1,26 @@
+#CONTAINER-NAME
+#default-preset: safrano9999-openclaw
+#required:
+CONTAINER_NAME=safrano9999-openclaw
+
+#publish-host: FASTAPI_HOST
+#required: published host bind address
+FASTAPI_HOST=127.0.0.1
+
+#required: OpenClaw gateway port
+OPENCLAW_GATEWAY_PORT=18789
+
+#default-preset: 1
+SAFRANO9999_FULLRUN_ON_START=1
+
+#default-preset: CET 07:00,CET 12:00,CET 15:30,CET 19:00
+OPENCLAW_CRONTABS=CET 07:00,CET 12:00,CET 15:30,CET 19:00
+
+#default-preset: safrano9999-openclaw
+TS_HOSTNAME=safrano9999-openclaw
+
+#default-preset: true
+CITADEL_TAILSCALE=true
+
+#default-preset: ./sqlite/content
+KACHELMANN_CONTENT_PATH=./sqlite/content

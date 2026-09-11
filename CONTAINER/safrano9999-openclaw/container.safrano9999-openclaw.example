@@ -1,0 +1,18 @@
+# Container port block: 2=20000-29999, TUN=no host publishing, blank=manual.
+#default-preset: TUN
+CONTAINER_NR=TUN
+
+#default-preset: default
+SAFRANO9999_OPENCLAW_NETWORK=default
+
+#required: OpenClaw published gateway port
+OPENCLAW_GATEWAY_PUBLISH_PORT=18789
+
+#default-preset: NET_ADMIN,NET_RAW
+SAFRANO9999_OPENCLAW_CAPABILITIES=NET_ADMIN,NET_RAW
+
+#default-preset: /dev/net/tun
+SAFRANO9999_OPENCLAW_DEVICES=/dev/net/tun
+
+#default-preset: ${CONTAINER_NAME}-tailscale:/var/lib/tailscale:Z
+TAILSCALE_VOLUMES=${CONTAINER_NAME}-tailscale:/var/lib/tailscale:Z
