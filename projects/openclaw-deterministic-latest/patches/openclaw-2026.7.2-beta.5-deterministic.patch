@@ -1,0 +1,835 @@
+diff --git a/scripts/runtime-postbuild.mjs b/scripts/runtime-postbuild.mjs
+index 29b1bd87f98773d8c31ddbad8aeea2e88e99f449..455de49f004ca3264f5c7ec83d0506027301deb8 100644
+--- a/scripts/runtime-postbuild.mjs
++++ b/scripts/runtime-postbuild.mjs
+@@ -24,6 +24,8 @@ const ROOT_STABLE_RUNTIME_ALIAS_PATTERN = /^.+\.(?:runtime|contract)\.js$/u;
+ const ROOT_RUNTIME_IMPORT_SPECIFIER_PATTERN =
+   /(["'])\.\/([^"']+\.(?:runtime|contract)-[A-Za-z0-9_-]+\.js)\1/gu;
+ const OFFICIAL_CHANNEL_CATALOG_OUTPUT = "dist/channel-catalog.json";
++const DETERMINISTIC_GATEWAY_REPLIES_SOURCE = "src/agents/deterministic-gateway-replies.txt";
++const DETERMINISTIC_GATEWAY_REPLIES_OUTPUT = "dist/deterministic-gateway-replies.txt";
+ const LEGACY_ROOT_RUNTIME_COMPAT_ALIASES = [
+   // v2026.4.29 dispatch lazy chunks. Package updates used to replace the
+   // dist tree before the live gateway had restarted, so an already-loaded old
+@@ -535,6 +537,15 @@ export function writeLegacyCliExitCompatChunks(params = {}) {
+   }
+ }
+ 
++export function copyDeterministicGatewayReplies(params = {}) {
++  const rootDir = params.rootDir ?? ROOT;
++  const fsImpl = params.fs ?? fs;
++  fsImpl.copyFileSync(
++    path.join(rootDir, DETERMINISTIC_GATEWAY_REPLIES_SOURCE),
++    path.join(rootDir, DETERMINISTIC_GATEWAY_REPLIES_OUTPUT),
++  );
++}
++
+ function shouldCopyStaticExtensionAssets(params) {
+   const env = params.env ?? process.env;
+   return env.OPENCLAW_RUNTIME_POSTBUILD_STATIC_ASSETS !== "0";
+@@ -576,6 +587,7 @@ export function runRuntimePostBuild(params = {}) {
+   };
+   runPhase("bundled plugin metadata", () => copyBundledPluginMetadata(params));
+   runPhase("official channel catalog", () => writeOfficialChannelCatalog(params));
++  runPhase("deterministic gateway replies", () => copyDeterministicGatewayReplies(params));
+   runPhase("bundled plugin runtime overlay", () => stageBundledPluginRuntime(params));
+   runPhase("static extension assets", () => {
+     if (!shouldCopyStaticExtensionAssets(params)) {
+diff --git a/src/agents/cli-runner.ts b/src/agents/cli-runner.ts
+index 07cd868bbc2eaf1e2d89e268ebe1cc15f5109790..3021b9a8b5b733afda82473cc1ada8052cfea766 100644
+--- a/src/agents/cli-runner.ts
++++ b/src/agents/cli-runner.ts
+@@ -504,7 +504,7 @@ async function runCliAgentInternal(
+   const hookResult = await runBeforeAgentReplyForTurn({
+     runId: params.runId,
+     trigger: params.trigger,
+-    event: { cleanedBody: params.prompt },
++    event: { ...params.beforeAgentReplyEvent, cleanedBody: params.prompt },
+     context: {
+       runId: params.runId,
+       jobId: params.jobId,
+@@ -512,6 +512,8 @@ async function runCliAgentInternal(
+       sessionKey: params.sessionKey,
+       sessionId: params.sessionId,
+       workspaceDir: params.workspaceDir,
++      modelProviderId: params.modelProvider ?? params.provider,
++      modelId: params.model ?? "",
+       trigger: params.trigger,
+       ...buildAgentHookContextChannelFields(params),
+       ...buildAgentHookContextIdentityFields({
+diff --git a/src/agents/cli-runner/types.ts b/src/agents/cli-runner/types.ts
+index e4ef1446c95ffba941bd8c5f1549978f7461790e..645ace8edbe2a182832c34a09e5f1bc955eb365e 100644
+--- a/src/agents/cli-runner/types.ts
++++ b/src/agents/cli-runner/types.ts
+@@ -20,7 +20,10 @@ import type { MediaFact } from "../../media/media-facts.js";
+ import type { PromptImageOrderEntry } from "../../media/prompt-image-order.js";
+ import type { CliBackendConfig } from "../../plugins/cli-backend.types.js";
+ import type { CliBackendExecutionMode } from "../../plugins/cli-backend.types.js";
+-import type { PluginHookChannelContext } from "../../plugins/hook-types.js";
++import type {
++  PluginHookBeforeAgentReplyEvent,
++  PluginHookChannelContext,
++} from "../../plugins/hook-types.js";
+ import type { SpawnSecretInput } from "../../process/supervisor/types.js";
+ import type { InputProvenance } from "../../sessions/input-provenance.js";
+ import type { UserTurnTranscriptRecorder } from "../../sessions/user-turn-transcript.js";
+@@ -71,6 +74,8 @@ export type RunCliAgentParams = {
+   disableCliLiveSession?: boolean;
+   config?: OpenClawConfig;
+   prompt: string;
++  /** Original inbound facts exposed to before_agent_reply; cleanedBody remains runner-owned. */
++  beforeAgentReplyEvent?: Omit<PluginHookBeforeAgentReplyEvent, "cleanedBody">;
+   transcriptPrompt?: string;
+   /** Undecorated current-turn prompt used to merge inline and offloaded images. */
+   imagePrompt?: string;
+diff --git a/src/agents/deterministic-gateway-model.test.ts b/src/agents/deterministic-gateway-model.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..74649da5f87b05acb2f62bb0322a343dc0e8864e
+--- /dev/null
++++ b/src/agents/deterministic-gateway-model.test.ts
+@@ -0,0 +1,34 @@
++import { describe, expect, it } from "vitest";
++import {
++  DETERMINISTIC_GATEWAY_REPLY,
++  DETERMINISTIC_NOTE_MISSING_REPLY,
++  DETERMINISTIC_NOTE_READY_REPLY,
++  isDeterministicGatewayModel,
++  isDeterministicNoteModel,
++  resolveDeterministicGatewayReply,
++} from "./deterministic-gateway-model.js";
++
++describe("deterministic gateway models", () => {
++  it("recognizes both credential-free model refs case-insensitively", () => {
++    expect(isDeterministicGatewayModel(" DUMMY ", " dummy ")).toBe(true);
++    expect(isDeterministicGatewayModel("dummy", "NOTE")).toBe(true);
++    expect(isDeterministicNoteModel("Dummy", " Note ")).toBe(true);
++    expect(isDeterministicGatewayModel("openai", "dummy")).toBe(false);
++  });
++
++  it("keeps the gateway and NOTE fallbacks deterministic", () => {
++    expect(resolveDeterministicGatewayReply({ provider: "dummy", model: "dummy" })).toBe(
++      DETERMINISTIC_GATEWAY_REPLY,
++    );
++    expect(resolveDeterministicGatewayReply({ provider: "dummy", model: "note" })).toBe(
++      DETERMINISTIC_NOTE_MISSING_REPLY,
++    );
++    expect(
++      resolveDeterministicGatewayReply({
++        provider: "dummy",
++        model: "note",
++        notePluginLoaded: true,
++      }),
++    ).toBe(DETERMINISTIC_NOTE_READY_REPLY);
++  });
++});
+diff --git a/src/agents/deterministic-gateway-model.ts b/src/agents/deterministic-gateway-model.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..f80e1eba7ed71d8299a5efb32326abbce364eb01
+--- /dev/null
++++ b/src/agents/deterministic-gateway-model.ts
+@@ -0,0 +1,59 @@
++import fs from "node:fs";
++import { fileURLToPath } from "node:url";
++
++const repliesPath = fileURLToPath(new URL("./deterministic-gateway-replies.txt", import.meta.url));
++const gatewayReply = fs.readFileSync(repliesPath, "utf8").trim();
++if (!gatewayReply) {
++  throw new Error("Invalid deterministic replies file: " + repliesPath);
++}
++
++export const DETERMINISTIC_GATEWAY_PROVIDER = "dummy";
++export const DETERMINISTIC_GATEWAY_MODEL = "dummy";
++export const DETERMINISTIC_GATEWAY_MODEL_REF =
++  DETERMINISTIC_GATEWAY_PROVIDER + "/" + DETERMINISTIC_GATEWAY_MODEL;
++export const DETERMINISTIC_NOTE_MODEL = "note";
++export const DETERMINISTIC_NOTE_MODEL_REF =
++  DETERMINISTIC_GATEWAY_PROVIDER + "/" + DETERMINISTIC_NOTE_MODEL;
++export const DETERMINISTIC_GATEWAY_REPLY = gatewayReply;
++export const DETERMINISTIC_NOTE_READY_REPLY = "NOTE ✅";
++export const DETERMINISTIC_NOTE_MISSING_REPLY =
++  "NOTE is not installed. Please install: https://github.com/safrano9999/NOTE/releases/latest/download/note-latest.zip";
++
++function normalizeModelPart(value: string | undefined): string {
++  return value?.trim().toLowerCase() ?? "";
++}
++
++export function isDeterministicGatewayModel(
++  provider: string | undefined,
++  model: string | undefined,
++): boolean {
++  return (
++    normalizeModelPart(provider) === DETERMINISTIC_GATEWAY_PROVIDER &&
++    [DETERMINISTIC_GATEWAY_MODEL, DETERMINISTIC_NOTE_MODEL].includes(normalizeModelPart(model))
++  );
++}
++
++export function isDeterministicNoteModel(
++  provider: string | undefined,
++  model: string | undefined,
++): boolean {
++  return (
++    normalizeModelPart(provider) === DETERMINISTIC_GATEWAY_PROVIDER &&
++    normalizeModelPart(model) === DETERMINISTIC_NOTE_MODEL
++  );
++}
++
++export function resolveDeterministicGatewayReply(params: {
++  provider?: string;
++  model?: string;
++  notePluginLoaded?: boolean;
++}): string | undefined {
++  if (isDeterministicNoteModel(params.provider, params.model)) {
++    return params.notePluginLoaded
++      ? DETERMINISTIC_NOTE_READY_REPLY
++      : DETERMINISTIC_NOTE_MISSING_REPLY;
++  }
++  return isDeterministicGatewayModel(params.provider, params.model)
++    ? DETERMINISTIC_GATEWAY_REPLY
++    : undefined;
++}
+diff --git a/src/agents/deterministic-gateway-replies.txt b/src/agents/deterministic-gateway-replies.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..75bfe8c68f5063ea0c1dc3edba540aa9ccbfca73
+--- /dev/null
++++ b/src/agents/deterministic-gateway-replies.txt
+@@ -0,0 +1 @@
++Not a valid command. Use /tools to see available commands.
+diff --git a/src/agents/embedded-agent-runner/run-orchestrator.ts b/src/agents/embedded-agent-runner/run-orchestrator.ts
+index a790b44048136ebcc4ab334a272200cade2f2705..174cd370d37befe1f3dd834837cc2522e87a763b 100644
+--- a/src/agents/embedded-agent-runner/run-orchestrator.ts
++++ b/src/agents/embedded-agent-runner/run-orchestrator.ts
+@@ -314,7 +314,7 @@ async function runEmbeddedAgentInternal(
+         const hookResult = await runBeforeAgentReplyForTurn({
+           runId: params.runId,
+           trigger: params.trigger,
+-          event: { cleanedBody: params.prompt },
++          event: { ...params.beforeAgentReplyEvent, cleanedBody: params.prompt },
+           context: hookCtx,
+           onDispatch: () =>
+             notifyExecutionPhase("before_agent_reply", { provider, model: modelId }),
+diff --git a/src/agents/embedded-agent-runner/run/params.ts b/src/agents/embedded-agent-runner/run/params.ts
+index 785b31a3cbf53842cc19257f37f425c023d6caea..abf35d4eae2fd2a58f4d56f5c030555cf9c4f6b4 100644
+--- a/src/agents/embedded-agent-runner/run/params.ts
++++ b/src/agents/embedded-agent-runner/run/params.ts
+@@ -17,7 +17,10 @@ import type { OpenClawConfig } from "../../../config/types.openclaw.js";
+ import type { ImageContent } from "../../../llm/types.js";
+ import type { MediaFact } from "../../../media/media-facts.js";
+ import type { PromptImageOrderEntry } from "../../../media/prompt-image-order.js";
+-import type { PluginHookChannelContext } from "../../../plugins/hook-types.js";
++import type {
++  PluginHookBeforeAgentReplyEvent,
++  PluginHookChannelContext,
++} from "../../../plugins/hook-types.js";
+ import type { RuntimePluginToolGrant } from "../../../plugins/runtime/tool-grant.js";
+ import type { CommandQueueEnqueueFn } from "../../../process/command-queue.types.js";
+ import type { InputProvenance } from "../../../sessions/input-provenance.js";
+@@ -188,6 +191,8 @@ export type RunEmbeddedAgentParams = {
+   config?: OpenClawConfig;
+   skillsSnapshot?: SkillSnapshot;
+   prompt: string;
++  /** Original inbound facts exposed to before_agent_reply; cleanedBody remains runner-owned. */
++  beforeAgentReplyEvent?: Omit<PluginHookBeforeAgentReplyEvent, "cleanedBody">;
+   /** User-visible prompt body to submit and persist; runtime context travels separately. */
+   transcriptPrompt?: string;
+   currentInboundEventKind?: InboundEventKind;
+diff --git a/src/agents/model-catalog.ts b/src/agents/model-catalog.ts
+index e2dac447d1034d2b5b662448799b3db9efda03a1..bfc8c92e484f48e585494731b3f4c3adf64de671 100644
+--- a/src/agents/model-catalog.ts
++++ b/src/agents/model-catalog.ts
+@@ -17,6 +17,11 @@ import { resolvePluginMetadataSnapshot } from "../plugins/plugin-metadata-snapsh
+ import type { PluginMetadataSnapshot } from "../plugins/plugin-metadata-snapshot.types.js";
+ import { augmentModelCatalogWithProviderPlugins } from "../plugins/provider-runtime.runtime.js";
+ import { createLazyImportLoader } from "../shared/lazy-promise.js";
++import {
++  DETERMINISTIC_GATEWAY_MODEL,
++  DETERMINISTIC_GATEWAY_PROVIDER,
++  DETERMINISTIC_NOTE_MODEL,
++} from "./deterministic-gateway-model.js";
+ import { modelSupportsInput as modelCatalogEntrySupportsInput } from "./model-catalog-lookup.js";
+ import type {
+   ModelCatalogEntry,
+@@ -322,9 +327,25 @@ function createModelCatalogSnapshot(
+   entries: ModelCatalogEntry[],
+   routeVariants: ModelCatalogRouteVariantCollector,
+ ): ModelCatalogSnapshot {
++  const deterministicEntries: ModelCatalogEntry[] = [
++    {
++      provider: DETERMINISTIC_GATEWAY_PROVIDER,
++      id: DETERMINISTIC_GATEWAY_MODEL,
++      name: "Deterministic gateway",
++    },
++    {
++      provider: DETERMINISTIC_GATEWAY_PROVIDER,
++      id: DETERMINISTIC_NOTE_MODEL,
++      name: "Deterministic NOTE",
++    },
++  ];
++  const allEntries = [...entries];
++  const allRouteVariants = [...routeVariants.entries];
++  mergeCatalogEntries(allEntries, deterministicEntries);
++  mergeCatalogEntries(allRouteVariants, deterministicEntries);
+   return {
+-    entries: sortModelCatalogEntries(entries),
+-    routeVariants: sortModelCatalogEntries(routeVariants.entries),
++    entries: sortModelCatalogEntries(allEntries),
++    routeVariants: sortModelCatalogEntries(allRouteVariants),
+   };
+ }
+ 
+diff --git a/src/auto-reply/reply/agent-runner-cli-candidate.ts b/src/auto-reply/reply/agent-runner-cli-candidate.ts
+index 5ce426f94ccdbd3b309280b36d2c8312d2227338..baa2a66b75b567aefa0361dbfd69565490b225cc 100644
+--- a/src/auto-reply/reply/agent-runner-cli-candidate.ts
++++ b/src/auto-reply/reply/agent-runner-cli-candidate.ts
+@@ -32,6 +32,7 @@ import { hasInboundAudio } from "./inbound-media.js";
+ import { resolveOriginMessageProvider } from "./origin-routing.js";
+ import type { FollowupRun } from "./queue.js";
+ import { isReplyOperationRestartAbort } from "./reply-operation-abort.js";
++import { buildBeforeAgentReplyEventData } from "./agent-runner-utils.js";
+ 
+ type CliPresentation = Pick<
+   ReturnType<typeof createAgentTurnPresentation>,
+@@ -240,6 +241,7 @@ export async function runCliFallbackCandidate(params: {
+             cwd: turn.followupRun.run.cwd,
+             config: params.runtimeConfig,
+             prompt: turn.commandBody,
++            beforeAgentReplyEvent: buildBeforeAgentReplyEventData(turn.sessionCtx),
+             transcriptPrompt: turn.transcriptCommandBody,
+             media: turn.followupRun.media,
+             suppressNextUserMessagePersistence: params.suppressQueuedUserPersistenceForCandidate,
+diff --git a/src/auto-reply/reply/agent-runner-embedded-candidate.ts b/src/auto-reply/reply/agent-runner-embedded-candidate.ts
+index 1614dd8f2c8ba96e6b43692441628a3b017ad9a9..645f3be52e7d3e8a114db6e21f54896057832e5d 100644
+--- a/src/auto-reply/reply/agent-runner-embedded-candidate.ts
++++ b/src/auto-reply/reply/agent-runner-embedded-candidate.ts
+@@ -95,7 +95,8 @@ export async function runEmbeddedFallbackCandidate(params: {
+   bootstrapPromptWarningSignaturesSeen: string[];
+ }> {
+   const turn = params.turn;
+-  const { embeddedContext, senderContext, runBaseParams } = buildEmbeddedRunExecutionParams({
++  const { embeddedContext, senderContext, runBaseParams, beforeAgentReplyEvent } =
++    buildEmbeddedRunExecutionParams({
+     run: {
+       ...params.candidateRun,
+       ...params.candidateFastMode,
+@@ -109,7 +110,7 @@ export async function runEmbeddedFallbackCandidate(params: {
+     promptCacheKey: turn.opts?.promptCacheKey,
+     allowTransientCooldownProbe: params.allowTransientCooldownProbe,
+     model: params.model,
+-  });
++    });
+   const agentHarnessPolicy = params.sessionRuntimeOverride
+     ? ({ runtime: params.sessionRuntimeOverride, runtimeSource: "model" } as const)
+     : resolveAgentHarnessPolicy({
+@@ -210,6 +211,7 @@ export async function runEmbeddedFallbackCandidate(params: {
+         isFinalFallbackAttempt: params.isFinalFallbackAttempt,
+         sandboxSessionKey: turn.runtimePolicySessionKey,
+         prompt: turn.commandBody,
++        beforeAgentReplyEvent,
+         transcriptPrompt: turn.transcriptCommandBody,
+         media: turn.followupRun.media,
+         userTurnTranscriptRecorder: params.userTurnTranscriptRecorder,
+diff --git a/src/auto-reply/reply/agent-runner-run.ts b/src/auto-reply/reply/agent-runner-run.ts
+index 63ae56ce5e87e4ca53b0b769c92c45cf9c8758da..b5c0cad7c889e75bc740966eb29a4cf143b8576b 100644
+--- a/src/auto-reply/reply/agent-runner-run.ts
++++ b/src/auto-reply/reply/agent-runner-run.ts
+@@ -40,7 +40,10 @@ import {
+   isAudioPayload,
+ } from "./agent-runner-helpers.js";
+ import { resetReplyRunSession } from "./agent-runner-session-reset.js";
+-import { resolveQueuedReplyExecutionConfig } from "./agent-runner-utils.js";
++import {
++  buildBeforeAgentReplyEventData,
++  resolveQueuedReplyExecutionConfig,
++} from "./agent-runner-utils.js";
+ import { createAudioAsVoiceBuffer, createBlockReplyPipeline } from "./block-reply-pipeline.js";
+ import { resolveEffectiveBlockStreamingConfig } from "./block-streaming.js";
+ import {
+@@ -242,7 +245,10 @@ export async function runReplyAgent(
+     const hookResult = await runBeforeAgentReplyForTurn({
+       runId: steerRunId,
+       trigger,
+-      event: { cleanedBody: followupRun.prompt },
++      event: {
++        ...buildBeforeAgentReplyEventData(sessionCtx),
++        cleanedBody: followupRun.prompt,
++      },
+       context: {
+         runId: steerRunId,
+         agentId: followupRun.run.agentId,
+diff --git a/src/auto-reply/reply/agent-runner-utils.deterministic.test.ts b/src/auto-reply/reply/agent-runner-utils.deterministic.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..1f8328004f572b7fcbb22661dc1b5a90dbf02f93
+--- /dev/null
++++ b/src/auto-reply/reply/agent-runner-utils.deterministic.test.ts
+@@ -0,0 +1,31 @@
++import { describe, expect, it } from "vitest";
++import { buildBeforeAgentReplyEventData } from "./agent-runner-utils.js";
++
++describe("before_agent_reply event data", () => {
++  it("preserves text, media, location, and structured context", () => {
++    expect(
++      buildBeforeAgentReplyEventData({
++        CommandBody: "raw user text",
++        media: [
++          {
++            kind: "image",
++            contentType: "image/png",
++            path: "/tmp/media/image.png",
++            workspaceDir: "/tmp/media",
++          },
++        ],
++        LocationLat: 48.1,
++        LocationLon: 11.5,
++        LocationIsLive: true,
++        ChannelStructuredContext: [{ label: "thread", payload: { id: "42" } }],
++      }),
++    ).toEqual({
++      userText: "raw user text",
++      mediaPaths: ["/tmp/media/image.png"],
++      mediaTypes: ["image/png"],
++      mediaWorkspaceDir: "/tmp/media",
++      location: { latitude: 48.1, longitude: 11.5, isLive: true },
++      structuredContext: [{ label: "thread", payload: { id: "42" } }],
++    });
++  });
++});
+diff --git a/src/auto-reply/reply/agent-runner-utils.ts b/src/auto-reply/reply/agent-runner-utils.ts
+index 6f83058dce1680a18d4c87700d3ce3f77d7e6d8e..8fe0ddc8df8cdc806026acfa75e1843072b43106 100644
+--- a/src/auto-reply/reply/agent-runner-utils.ts
++++ b/src/auto-reply/reply/agent-runner-utils.ts
+@@ -22,6 +22,7 @@ import {
+   type OpenClawConfig,
+ } from "../../config/config.js";
+ import type { SessionEntry } from "../../config/sessions.js";
++import type { PluginHookBeforeAgentReplyEvent } from "../../plugins/hook-types.js";
+ import { isReasoningTagProvider } from "../../utils/provider-utils.js";
+ import type { TemplateContext } from "../templating.js";
+ import { resolveRunAuthProfile } from "./agent-runner-auth-profile.js";
+@@ -310,6 +311,70 @@ function buildTemplateSenderContext(sessionCtx: TemplateContext) {
+   };
+ }
+ 
++function normalizeNonEmptyStrings(values: unknown): string[] {
++  return Array.isArray(values)
++    ? values
++        .map((value) => (typeof value === "string" ? normalizeOptionalString(value) : undefined))
++        .filter((value): value is string => Boolean(value))
++    : [];
++}
++
++/** Captures the inbound facts shared by embedded, CLI, and steered reply admission. */
++export function buildBeforeAgentReplyEventData(
++  sessionCtx: TemplateContext,
++): Omit<PluginHookBeforeAgentReplyEvent, "cleanedBody"> {
++  const mediaPaths = normalizeNonEmptyStrings(sessionCtx.media?.map((entry) => entry.path));
++  const legacyMediaPaths = normalizeNonEmptyStrings(
++    sessionCtx.MediaPaths?.length ? sessionCtx.MediaPaths : [sessionCtx.MediaPath],
++  );
++  const mediaTypes = normalizeNonEmptyStrings(
++    sessionCtx.media?.map((entry) => entry.contentType ?? entry.kind),
++  );
++  const legacyMediaTypes = normalizeNonEmptyStrings(
++    sessionCtx.MediaTypes?.length ? sessionCtx.MediaTypes : [sessionCtx.MediaType],
++  );
++  const userText =
++    normalizeOptionalString(sessionCtx.CommandBody) ??
++    normalizeOptionalString(sessionCtx.RawBody) ??
++    normalizeOptionalString(sessionCtx.BodyForCommands);
++  const mediaWorkspaceDir =
++    sessionCtx.media
++      ?.map((entry) => normalizeOptionalString(entry.workspaceDir))
++      .find((value): value is string => Boolean(value)) ??
++    normalizeOptionalString(sessionCtx.MediaWorkspaceDir);
++  const structuredContext =
++    sessionCtx.ChannelStructuredContext ?? sessionCtx.UntrustedStructuredContext;
++  const location =
++    typeof sessionCtx.LocationLat === "number" && typeof sessionCtx.LocationLon === "number"
++      ? {
++          latitude: sessionCtx.LocationLat,
++          longitude: sessionCtx.LocationLon,
++          ...(typeof sessionCtx.LocationAccuracy === "number"
++            ? { accuracy: sessionCtx.LocationAccuracy }
++            : {}),
++          ...(sessionCtx.LocationName ? { name: sessionCtx.LocationName } : {}),
++          ...(sessionCtx.LocationAddress ? { address: sessionCtx.LocationAddress } : {}),
++          ...(sessionCtx.LocationSource ? { source: sessionCtx.LocationSource } : {}),
++          ...(typeof sessionCtx.LocationIsLive === "boolean"
++            ? { isLive: sessionCtx.LocationIsLive }
++            : {}),
++          ...(sessionCtx.LocationCaption ? { caption: sessionCtx.LocationCaption } : {}),
++        }
++      : undefined;
++  return {
++    ...(userText ? { userText } : {}),
++    ...(mediaPaths.length || legacyMediaPaths.length
++      ? { mediaPaths: mediaPaths.length ? mediaPaths : legacyMediaPaths }
++      : {}),
++    ...(mediaTypes.length || legacyMediaTypes.length
++      ? { mediaTypes: mediaTypes.length ? mediaTypes : legacyMediaTypes }
++      : {}),
++    ...(mediaWorkspaceDir ? { mediaWorkspaceDir } : {}),
++    ...(location ? { location } : {}),
++    ...(structuredContext?.length ? { structuredContext } : {}),
++  };
++}
++
+ /** Builds execution-specific embedded run params for queued reply dispatch. */
+ export function buildEmbeddedRunExecutionParams(params: {
+   run: FollowupRun["run"];
+@@ -343,5 +408,6 @@ export function buildEmbeddedRunExecutionParams(params: {
+     embeddedContext,
+     senderContext,
+     runBaseParams,
++    beforeAgentReplyEvent: buildBeforeAgentReplyEventData(params.sessionCtx),
+   };
+ }
+diff --git a/src/commands/auth-choice.model-check.ts b/src/commands/auth-choice.model-check.ts
+index 2eb172ab3ada3da7a81374e26691e5c3c1148ce9..3348b6950c28d61dd3a2d53b9e666080b2848e0f 100644
+--- a/src/commands/auth-choice.model-check.ts
++++ b/src/commands/auth-choice.model-check.ts
+@@ -7,6 +7,7 @@ import {
+   resolveDefaultAgentId,
+ } from "../agents/agent-scope.js";
+ import { ensureAuthProfileStore } from "../agents/auth-profiles.js";
++import { isDeterministicGatewayModel } from "../agents/deterministic-gateway-model.js";
+ import { createModelAuthAvailabilityResolver } from "../agents/model-auth-availability.js";
+ import type { ModelCatalogEntry } from "../agents/model-catalog.js";
+ import { resolveDefaultModelForAgent } from "../agents/model-selection.js";
+@@ -56,6 +57,9 @@ export function resolveDefaultModelAuthStatus(
+     cfg: config,
+     agentId: options?.agentId,
+   });
++  if (isDeterministicGatewayModel(ref.provider, ref.model)) {
++    return { provider: ref.provider, model: ref.model, status: "ready", hasAuth: true };
++  }
+   const store = ensureAuthProfileStore(options?.agentDir, {
+     allowKeychainPrompt: false,
+     config,
+diff --git a/src/flows/model-picker.ts b/src/flows/model-picker.ts
+index f5de44c050bd1857e8b3be5dd5fa2cc5a60d284d..3c82e4e5dd77c9a1ac4b9addcd27f34fcd78fed8 100644
+--- a/src/flows/model-picker.ts
++++ b/src/flows/model-picker.ts
+@@ -3,6 +3,10 @@ import { normalizeOptionalString } from "@openclaw/normalization-core/string-coe
+ import { sortUniqueStrings } from "@openclaw/normalization-core/string-normalization";
+ import { resolveAgentConfig, resolveDefaultAgentDir } from "../agents/agent-scope.js";
+ import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
++import {
++  DETERMINISTIC_GATEWAY_MODEL_REF,
++  DETERMINISTIC_NOTE_MODEL_REF,
++} from "../agents/deterministic-gateway-model.js";
+ import { resolveAgentHarnessPolicy } from "../agents/harness/policy.js";
+ import {
+   resolveLogicalModelCatalogEntryState,
+@@ -74,6 +78,21 @@ function formatKeepCurrentModelLabel(params: {
+     : t("wizard.model.keepCurrentDefault", { value: params.resolvedKey });
+ }
+ 
++function addDeterministicModelOptions(options: WizardSelectOption[]): void {
++  if (!options.some((option) => option.value === DETERMINISTIC_GATEWAY_MODEL_REF)) {
++    options.push({
++      value: DETERMINISTIC_GATEWAY_MODEL_REF,
++      label: t("wizard.model.deterministicGateway"),
++    });
++  }
++  if (!options.some((option) => option.value === DETERMINISTIC_NOTE_MODEL_REF)) {
++    options.push({
++      value: DETERMINISTIC_NOTE_MODEL_REF,
++      label: t("wizard.model.deterministicNote"),
++    });
++  }
++}
++
+ function formatModelRefLabel(params: {
+   provider: string;
+   model: string;
+@@ -880,6 +899,7 @@ export async function promptDefaultModel(
+       label: t("wizard.model.browseAll"),
+       hint: t("wizard.model.loadsProviderCatalogs"),
+     });
++    addDeterministicModelOptions(options);
+ 
+     const selection = await params.prompter.select({
+       message: params.message ?? t("wizard.model.defaultModel"),
+@@ -925,6 +945,7 @@ export async function promptDefaultModel(
+         hint: t("wizard.model.current"),
+       });
+     }
++    addDeterministicModelOptions(options);
+     if (options.length === 0) {
+       return promptManualModel({
+         prompter: params.prompter,
+@@ -968,11 +989,7 @@ export async function promptDefaultModel(
+   }
+   const catalog = catalogSnapshot.entries;
+   if (catalog.length === 0) {
+-    return promptManualModel({
+-      prompter: params.prompter,
+-      allowBlank: allowKeep,
+-      initialValue: configuredRaw || resolvedKey || undefined,
+-    });
++    return promptDefaultModel({ ...params, loadCatalog: false });
+   }
+ 
+   const aliasIndex = buildModelAliasIndex({
+@@ -1000,11 +1017,7 @@ export async function promptDefaultModel(
+     hasAuth,
+   });
+   if (models.length === 0) {
+-    return promptManualModel({
+-      prompter: params.prompter,
+-      allowBlank: allowKeep,
+-      initialValue: configuredRaw || resolvedKey || undefined,
+-    });
++    return promptDefaultModel({ ...params, loadCatalog: false });
+   }
+ 
+   const isVisibleProvider = createModelPickerVisibleProviderPredicate({
+@@ -1022,11 +1035,7 @@ export async function promptDefaultModel(
+     isVisibleProvider,
+   });
+   if (filteredModels.length === 0) {
+-    return promptManualModel({
+-      prompter: params.prompter,
+-      allowBlank: allowKeep,
+-      initialValue: configuredRaw || resolvedKey || undefined,
+-    });
++    return promptDefaultModel({ ...params, loadCatalog: false });
+   }
+   const matchesPreferredProvider = preferredProvider
+     ? createPreferredProviderMatcher({
+@@ -1091,6 +1100,7 @@ export async function promptDefaultModel(
+       hint: t("wizard.model.currentNotInCatalog"),
+     });
+   }
++  addDeterministicModelOptions(options);
+ 
+   const firstPreferredModel =
+     preferredProvider && hasPreferredProvider
+@@ -1128,6 +1138,12 @@ export async function promptDefaultModel(
+       initialValue: configuredRaw || resolvedKey || undefined,
+     });
+   }
++  if (
++    selectedValue === DETERMINISTIC_GATEWAY_MODEL_REF ||
++    selectedValue === DETERMINISTIC_NOTE_MODEL_REF
++  ) {
++    return { model: selectedValue };
++  }
+ 
+   const providerPluginResult = await maybeHandleProviderPluginSelection({
+     selection: selectedValue,
+diff --git a/src/plugins/before-agent-reply.test.ts b/src/plugins/before-agent-reply.test.ts
+index 35cd0d19c1a1cca596ab6284c28a3057d59b18c2..02d5683292552c68108d10ac6b4b0170a550bd32 100644
+--- a/src/plugins/before-agent-reply.test.ts
++++ b/src/plugins/before-agent-reply.test.ts
+@@ -9,9 +9,11 @@ const hookRunner = vi.hoisted(() => ({
+   hasHooks: vi.fn(),
+   runBeforeAgentReply: vi.fn(),
+ }));
++const pluginRegistry = vi.hoisted(() => ({ plugins: [] as Array<{ id: string; status: string }> }));
+ 
+ vi.mock("./hook-runner-global.js", () => ({
+   getGlobalHookRunner: () => hookRunner,
++  getGlobalPluginRegistry: () => pluginRegistry,
+ }));
+ 
+ function runHook(runId: string) {
+@@ -27,6 +29,7 @@ describe("before_agent_reply runner boundary", () => {
+   beforeEach(() => {
+     hookRunner.hasHooks.mockReset().mockReturnValue(true);
+     hookRunner.runBeforeAgentReply.mockReset().mockResolvedValue(undefined);
++    pluginRegistry.plugins = [];
+   });
+ 
+   it("preserves the complete reply payload", () => {
+@@ -40,6 +43,62 @@ describe("before_agent_reply runner boundary", () => {
+     expect(buildHandledBeforeAgentReplyPayloads(reply)).toEqual([reply]);
+   });
+ 
++  it("returns the deterministic gateway reply without a plugin hook", async () => {
++    hookRunner.hasHooks.mockReturnValue(false);
++
++    const result = await runBeforeAgentReplyForTurn({
++      runId: "deterministic-no-hook",
++      trigger: "user",
++      event: { cleanedBody: "hello" },
++      context: { modelProviderId: "dummy", modelId: "dummy" },
++    });
++
++    expect(result).toMatchObject({
++      handled: true,
++      reply: { text: "Not a valid command. Use /tools to see available commands." },
++    });
++    expect(hookRunner.runBeforeAgentReply).not.toHaveBeenCalled();
++  });
++
++  it("lets a plugin claim NOTE before the deterministic fallback", async () => {
++    hookRunner.runBeforeAgentReply.mockResolvedValue({
++      handled: true,
++      reply: { text: "plugin reply" },
++    });
++
++    const result = await runBeforeAgentReplyForTurn({
++      runId: "deterministic-plugin-first",
++      trigger: "user",
++      event: { cleanedBody: "remember this" },
++      context: { modelProviderId: "dummy", modelId: "note" },
++    });
++
++    expect(result?.reply?.text).toBe("plugin reply");
++  });
++
++  it("passes the complete turn event to the hook unchanged", async () => {
++    const event = {
++      cleanedBody: "clean",
++      userText: "raw",
++      mediaPaths: ["/tmp/image.png"],
++      mediaTypes: ["image/png"],
++      mediaWorkspaceDir: "/tmp",
++      location: { latitude: 1, longitude: 2, isLive: true },
++      structuredContext: [{ label: "thread", payload: { id: "42" } }],
++    };
++
++    await runBeforeAgentReplyForTurn({
++      runId: "complete-event",
++      trigger: "user",
++      event,
++      context: { runId: "complete-event" },
++    });
++
++    expect(hookRunner.runBeforeAgentReply).toHaveBeenCalledWith(event, {
++      runId: "complete-event",
++    });
++  });
++
+   it("keeps a nested run from checkpointing its parent admission", async () => {
+     const beforeDispatch = vi.fn(async () => undefined);
+     const afterDispatch = vi.fn(async (result) => result);
+diff --git a/src/plugins/before-agent-reply.ts b/src/plugins/before-agent-reply.ts
+index 768a5bc09963f483346c86492523a0f616757154..10c29eac74fca694f7aeecca1a6640f80a608c64 100644
+--- a/src/plugins/before-agent-reply.ts
++++ b/src/plugins/before-agent-reply.ts
+@@ -1,9 +1,10 @@
+ import { AsyncLocalStorage } from "node:async_hooks";
++import { resolveDeterministicGatewayReply } from "../agents/deterministic-gateway-model.js";
+ import type { ReplyPayload } from "../auto-reply/reply-payload.js";
+ import { SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
+ import { runOncePerAgentRun } from "../infra/agent-events.js";
+ import { resolveGlobalSingleton } from "../shared/global-singleton.js";
+-import { getGlobalHookRunner } from "./hook-runner-global.js";
++import { getGlobalHookRunner, getGlobalPluginRegistry } from "./hook-runner-global.js";
+ import type {
+   PluginHookAgentContext,
+   PluginHookBeforeAgentReplyEvent,
+@@ -39,6 +40,23 @@ export function buildHandledBeforeAgentReplyPayloads(reply?: ReplyPayload): Repl
+   return [reply ?? { text: SILENT_REPLY_TOKEN }];
+ }
+ 
++function resolveDeterministicBeforeAgentReplyResult(
++  context: PluginHookAgentContext,
++): PluginHookBeforeAgentReplyResult | undefined {
++  const notePluginLoaded =
++    getGlobalPluginRegistry()?.plugins.some(
++      (plugin) => plugin.id === "note" && plugin.status === "loaded",
++    ) ?? false;
++  const text = resolveDeterministicGatewayReply({
++    provider: context.modelProviderId,
++    model: context.modelId,
++    notePluginLoaded,
++  });
++  return text
++    ? { handled: true, reply: { text }, reason: "deterministic-gateway-fallback" }
++    : undefined;
++}
++
+ /** Runs the reply claim hook once for one admitted turn, across model fallbacks. */
+ export function runBeforeAgentReplyForTurn(params: {
+   runId: string;
+@@ -52,9 +70,10 @@ export function runBeforeAgentReplyForTurn(params: {
+     return Promise.resolve(undefined);
+   }
+   return runOncePerAgentRun(params.runId, "before_agent_reply", async () => {
++    const deterministicResult = resolveDeterministicBeforeAgentReplyResult(params.context);
+     const hookRunner = getGlobalHookRunner();
+     if (!hookRunner?.hasHooks("before_agent_reply")) {
+-      return undefined;
++      return deterministicResult;
+     }
+     const observerScope = beforeAgentReplyObserver.getStore();
+     // Nested agent runs inherit async context. Bind recovery to the first runner
+@@ -72,7 +91,10 @@ export function runBeforeAgentReplyForTurn(params: {
+     params.onDispatch?.();
+     let result = await hookRunner.runBeforeAgentReply(params.event, params.context);
+     if (!result?.handled) {
+-      params.onDeclined?.();
++      result = deterministicResult;
++      if (!result?.handled) {
++        params.onDeclined?.();
++      }
+     }
+     if (observer) {
+       result = await observer.afterDispatch(result);
+diff --git a/src/plugins/hook-types.ts b/src/plugins/hook-types.ts
+index cdb94fc50b1c1e5e3266b8b5354b83bfd0491a23..e600417976341dc830b487ea7f4040d7937a5a46 100644
+--- a/src/plugins/hook-types.ts
++++ b/src/plugins/hook-types.ts
+@@ -293,6 +293,21 @@ export type PluginHookContextWindowSource =
+ 
+ export type PluginHookBeforeAgentReplyEvent = {
+   cleanedBody: string;
++  userText?: string;
++  mediaPaths?: string[];
++  mediaTypes?: string[];
++  mediaWorkspaceDir?: string;
++  location?: {
++    latitude: number;
++    longitude: number;
++    accuracy?: number;
++    name?: string;
++    address?: string;
++    source?: string;
++    isLive?: boolean;
++    caption?: string;
++  };
++  structuredContext?: Array<{ label: string; source?: string; type?: string; payload: unknown }>;
+ };
+ 
+ export type PluginHookBeforeAgentReplyResult = {
+diff --git a/src/wizard/i18n/locales/en.ts b/src/wizard/i18n/locales/en.ts
+index 25e52fd0460f03d743db163eee09c26d2b88b21c..9322da7aea06c8df8db6d1bb86a1940b2b5d1b95 100644
+--- a/src/wizard/i18n/locales/en.ts
++++ b/src/wizard/i18n/locales/en.ts
+@@ -228,6 +228,8 @@ export const en = {
+       defaultModelBlankToKeep: "Default model (blank to keep)",
+       defaultSet: "Default model set to {model}",
+       defaultSetForAgent: 'Default model set to {model} for agent "{agent}".',
++      deterministicGateway: "dummy/dummy - No AI - deterministic gateway only",
++      deterministicNote: "dummy/note - No AI - deterministic NOTE model",
+       enterManually: "Enter model manually",
+       filterByProvider: "Filter models by provider",
+       keepCurrent: "Keep current ({value})",
+diff --git a/src/wizard/i18n/locales/zh-CN.ts b/src/wizard/i18n/locales/zh-CN.ts
+index 87bbe825a622638015e5e44d98476c682e5370c6..30b1ca453c69d24f9d2d55c77cccd295752ded6c 100644
+--- a/src/wizard/i18n/locales/zh-CN.ts
++++ b/src/wizard/i18n/locales/zh-CN.ts
+@@ -226,6 +226,8 @@ export const zh_CN = {
+       defaultModelBlankToKeep: "默认模型（留空则保留）",
+       defaultSet: "默认模型已设置为 {model}",
+       defaultSetForAgent: 'agent "{agent}" 的默认模型已设置为 {model}。',
++      deterministicGateway: "dummy/dummy - 无 AI - 仅确定性 Gateway",
++      deterministicNote: "dummy/note - No AI - deterministic NOTE model",
+       enterManually: "手动输入模型",
+       filterByProvider: "按 provider 筛选模型",
+       keepCurrent: "保留当前值（{value}）",
+diff --git a/src/wizard/i18n/locales/zh-TW.ts b/src/wizard/i18n/locales/zh-TW.ts
+index 51ddfa5f4c409114c1b43c9a34aaa56030cffaa1..5ff0b8b7df7e67fbd7d5023e0ced302ea78ce31e 100644
+--- a/src/wizard/i18n/locales/zh-TW.ts
++++ b/src/wizard/i18n/locales/zh-TW.ts
+@@ -226,6 +226,8 @@ export const zh_TW = {
+       defaultModelBlankToKeep: "預設模型（留空則保留）",
+       defaultSet: "預設模型已設定為 {model}",
+       defaultSetForAgent: 'agent "{agent}" 的預設模型已設定為 {model}。',
++      deterministicGateway: "dummy/dummy - 無 AI - 僅確定性 Gateway",
++      deterministicNote: "dummy/note - No AI - deterministic NOTE model",
+       enterManually: "手動輸入模型",
+       filterByProvider: "按 provider 篩選模型",
+       keepCurrent: "保留目前值（{value}）",

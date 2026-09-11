@@ -1,0 +1,5 @@
+.work/
+upstream/
+artifacts/
+*.tar.gz
+*.sha256
