@@ -1,0 +1,179 @@
+# Source of truth: SCRIPTS/githubactions. Generated copies are overwritten.
+name: safrano9999-openclaw build_image
+run-name: ${{ format('safrano9999-openclaw {0}{1}', inputs.image_tag || github.ref_name, inputs.monitor_id != '' && format(' [monitor:{0}:{1}]', inputs.monitor_id, inputs.monitor_final) || '') }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Container image tag to publish. Empty uses YYYY.M.D."
+        required: false
+        default: ""
+      plugin_release_tag:
+        description: "Plugin counter tag to stage. Empty/counter resolves each plugin independently."
+        required: false
+        default: "counter"
+      push_latest:
+        description: "Also publish the container image as :latest."
+        required: true
+        type: boolean
+        default: true
+      monitor_id:
+        description: "Optional event-monitor correlation id"
+        required: false
+        default: ""
+        type: string
+      monitor_final:
+        description: "This run is the final monitored cascade stage"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  build-and-push-safrano9999-openclaw:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE_NAME: ghcr.io/safrano9999/safrano9999-openclaw
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: .github/scripts/free-runner-disk-space.sh
+
+      - name: Resolve tags
+        id: tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            version="${GITHUB_REF_NAME}"
+            plugin_tag="counter"
+          else
+            version="${{ inputs.image_tag }}"
+            if [ -z "$version" ]; then
+              version="$(date +%Y.%-m.%-d)"
+            fi
+            plugin_tag="${{ inputs.plugin_release_tag }}"
+          fi
+          {
+            echo "version=$version"
+            echo "plugin_tag=$plugin_tag"
+            echo "tags<<EOF"
+            echo "${IMAGE_NAME}:${version}"
+            if [ "${{ github.event_name == 'push' || inputs.push_latest }}" = "true" ]; then
+              echo "${IMAGE_NAME}:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Stage plugin release archives
+        env:
+          GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+          OPENCLAW_PLUGIN_RELEASE_TAG: ${{ steps.tags.outputs.plugin_tag }}
+        run: |
+          cd safrano9999-openclaw
+          CONFIG_CONTAINER_NAME=safrano9999-openclaw ./setup.sh --no-config --no-build
+
+      - name: Resolve image build configuration
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd safrano9999-openclaw
+          build_conf="build.conf"
+          [ -f "$build_conf" ] || build_conf="safrano9999-openclaw.build.conf_example"
+          set -a
+          . "./$build_conf"
+          set +a
+          : "${OPENCLAW_EPHEMERAL_IMAGE:?Missing OPENCLAW_EPHEMERAL_IMAGE}"
+          {
+            echo "openclaw_ephemeral_image=$OPENCLAW_EPHEMERAL_IMAGE"
+            echo "source_key=$(sha256sum .safrano9999-source-tags.tsv | cut -d' ' -f1)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          cache-binary: false
+          keep-state: false
+          cleanup: true
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./safrano9999-openclaw
+          file: ./safrano9999-openclaw/Containerfile
+          pull: true
+          no-cache: true
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: |
+            OPENCLAW_EPHEMERAL_IMAGE=${{ steps.build.outputs.openclaw_ephemeral_image }}
+            SAFRANO9999_SOURCE_KEY=${{ steps.build.outputs.source_key }}
+
+      - name: Reclaim container build space
+        run: .github/scripts/prune-container-build-space.sh
+
+      - name: Test published runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="${IMAGE_NAME}:${{ steps.tags.outputs.version }}"
+          docker run --rm --entrypoint bash "$image" -lc '
+            set -euxo pipefail
+            test -x /usr/local/bin/openclaw-ephemeral.py
+            test -x /usr/local/bin/safrano9999-openclaw-configure
+            test -f /root/.openclaw/extensions/note/openclaw.plugin.json
+            for plugin in dailynews nextcloud zeroinbox kachelmann citadel; do
+              test -f "/root/.openclaw/extensions/$plugin/openclaw.plugin.json"
+            done
+            for phase in pre-config post-config pre-gateway; do
+              test -d \
+                "/usr/local/share/openclaw-ephemeral/runtime.d/${phase}.d"
+            done
+            test "$(jq -r .version /app/package.json)" = 2026.7.1
+          '
+          test "$(
+            docker image inspect --format '{{json .Config.Entrypoint}}' "$image"
+          )" = '["tini","-s","--","/usr/local/bin/openclaw-ephemeral.py"]'
+          test "$(docker image inspect --format '{{json .Config.Cmd}}' "$image")" \
+            = '["run"]'
+          test "$(docker image inspect --format '{{.Config.User}}' "$image")" = root
+
+      - name: Verify private GHCR package
+        env:
+          GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN || github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect \
+            "${IMAGE_NAME}:${{ steps.tags.outputs.version }}" >/dev/null
+          package_url="https://api.github.com/user/packages/container/safrano9999-openclaw"
+          verified=false
+          for _ in {1..20}; do
+            if curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "$package_url" \
+              | jq -e \
+                '.name == "safrano9999-openclaw" and .visibility == "private"' \
+                >/dev/null; then
+              verified=true
+              break
+            fi
+            sleep 3
+          done
+          [ "$verified" = true ]

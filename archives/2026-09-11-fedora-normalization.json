@@ -1,0 +1,1008 @@
+{
+  "description": "Pre-normalization Fedora44 directories, workflows and original OpenClaw Ephemeral source. Original file contents are preserved.",
+  "files": [
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/.dockerignore",
+      "archive": "CONTAINER/fedora44-ai-core-pre/.dockerignore",
+      "sha256": "a83784d2c25ca0a4d801d09c8e2b76b1ade4f113e94829472bc1ee89d444084e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/.gitignore",
+      "archive": "CONTAINER/fedora44-ai-core-pre/.gitignore",
+      "sha256": "ce644542af4d8977cde17596876ff1aa50289ec631081a3361fbe7d7bba92f06"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/Containerfile",
+      "archive": "CONTAINER/fedora44-ai-core-pre/Containerfile",
+      "sha256": "a9c1b1fff0297189f6cf490b99e8a2d52e26e11175331846e4de3186baef6a87"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/README.md",
+      "archive": "CONTAINER/fedora44-ai-core-pre/README.md",
+      "sha256": "01149d27c8186b158e5b0cd17678ea44554d27ec0ca9885964adffb5ec4fdf74"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/build.conf",
+      "archive": "CONTAINER/fedora44-ai-core-pre/build.conf",
+      "sha256": "af76e802e2f452543cfc75da002cfa40b97309deb077382359637ef938aec69c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/build/build-local.sh",
+      "archive": "CONTAINER/fedora44-ai-core-pre/build/build-local.sh",
+      "sha256": "309ffba5744c6c1c982ce4000e63a76905fa0a89871265e8bd98a4adc64d20a9"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/build/hermes-nous-api-key.patch",
+      "archive": "CONTAINER/fedora44-ai-core-pre/build/hermes-nous-api-key.patch",
+      "sha256": "78cdf22d38baf9207def4b4fa37042646b00c63d9bb05176428303bfbb77a61c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/build/prepare-build-context.sh",
+      "archive": "CONTAINER/fedora44-ai-core-pre/build/prepare-build-context.sh",
+      "sha256": "01507c356e64b6c265ba190efc2ecf25d247a05af4aeb915f4e2dd661fe03b5d"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/build/resolve-build-inputs.sh",
+      "archive": "CONTAINER/fedora44-ai-core-pre/build/resolve-build-inputs.sh",
+      "sha256": "8187c35e7326d7df691fb35281ff451a60df80052184d68f0ac5437c955c8539"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/bip39.service",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/bip39.service",
+      "sha256": "a9eab7bda234bb46d1e5269727b1049de41389c4132fc1b140b14783ff731b2a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/ca-certificates-import.service",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/ca-certificates-import.service",
+      "sha256": "1514425590d2dcfc7a6ea4af05ebb4f9a52a154a129175abd78d89680a09de51"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/cloudflared.service",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/cloudflared.service",
+      "sha256": "3016e7e9ea3271a07ad27077b180a30a1b765de63ca705013f1ea20c77d79689"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/cockpit.service",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/cockpit.service",
+      "sha256": "38b0039b689c736259c10022fdde7422ee8d95616f43e9423b1452d9f1238a77"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/persistainer.service.d/10-ca-certificates.conf",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/persistainer.service.d/10-ca-certificates.conf",
+      "sha256": "223cbe20fce4fdd4550c1f7393b8816e381a4b840b6a196f2a7c11fe1c9415aa"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/tailscale-up.service",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/tailscale-up.service",
+      "sha256": "6f9b1bcd851a8fede0d3eb043fcd6403e46a1cbc28d6c95a5e538d90aa5bdfeb"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/etc/systemd/system/tailscaled.service",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/etc/systemd/system/tailscaled.service",
+      "sha256": "e1d6c90c3d6c9b3fc479994a40babd3f36043a32dccade1f3af77ca60df16125"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/usr/local/bin/tailscale-state-up.sh",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/usr/local/bin/tailscale-state-up.sh",
+      "sha256": "774bf3154713c00fb49444be9dfd249e226b3a8a061fa15dec17446d1d3ef432"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/usr/local/libexec/fedora44-wait-ready",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/usr/local/libexec/fedora44-wait-ready",
+      "sha256": "d4b55bea5d404004c786a7438216eadcf9a50452e6f1fdb7eb5fefe588d3b61b"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/image/runtime/usr/local/libexec/import-ca-certificates",
+      "archive": "CONTAINER/fedora44-ai-core-pre/image/runtime/usr/local/libexec/import-ca-certificates",
+      "sha256": "216cd34288fe0d931517cec82fba19f20e3aed165aad60b008f81a226abda9ff"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/requirements.base.txt",
+      "archive": "CONTAINER/fedora44-ai-core-pre/requirements.base.txt",
+      "sha256": "a3d900b077cfa1ce1c6726794d1820fb0e46fee4d440cc136e399f34af2fb60a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/tests/test_ca_certificates_runtime.py",
+      "archive": "CONTAINER/fedora44-ai-core-pre/tests/test_ca_certificates_runtime.py",
+      "sha256": "ec2da868c65ae12d99d52c617fe26f4202fe5e9a77a5a81662d127aa4963d41a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core-pre/tests/test_wait_ready.py",
+      "archive": "CONTAINER/fedora44-ai-core-pre/tests/test_wait_ready.py",
+      "sha256": "fe5857b8e530168e32e3f25fdcc21008b24c55c04eb781912344ff75ff06c11e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/.dockerignore",
+      "archive": "CONTAINER/fedora44-ai-core/.dockerignore",
+      "sha256": "eaa33364d2c2fe985209c30be98deac83545b3778756d8eb386aa1d0da6dcbff"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/.gitignore",
+      "archive": "CONTAINER/fedora44-ai-core/.gitignore",
+      "sha256": "6466e84389a3767e88b61a0622d28b4f2e81d81a54180b3de9caeccf0ea30906"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/Containerfile",
+      "archive": "CONTAINER/fedora44-ai-core/Containerfile",
+      "sha256": "9fbb0169c04075afd51451e4ba52b4bddefd77c6042f5e7bbf857b0693b65806"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/OPENCLAW-UPGRADE.md",
+      "archive": "CONTAINER/fedora44-ai-core/OPENCLAW-UPGRADE.md",
+      "sha256": "93ee26a54096e8dac19ab33f135a658e55b8655064fe89adfe7533dd8174fca0"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/README.md",
+      "archive": "CONTAINER/fedora44-ai-core/README.md",
+      "sha256": "8c5e96eafd6396ab3b6e3dfce39a74be96b7ce12dc5456b83184a5e48e9670fb"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/build.conf",
+      "archive": "CONTAINER/fedora44-ai-core/build.conf",
+      "sha256": "08164aa740f98c15c845b1822acb408cc315b9b992d20840170dbaaa2508a728"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/build/build-local.sh",
+      "archive": "CONTAINER/fedora44-ai-core/build/build-local.sh",
+      "sha256": "c73c82254223cbf907ed1bd66230a37407e3b7e42c8b605a505cd43b76e2bcea"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/build/prepare-build-context.sh",
+      "archive": "CONTAINER/fedora44-ai-core/build/prepare-build-context.sh",
+      "sha256": "b32c06762df3c865c66c447fd6afc70e675f539c05d890f42189304796c4df32"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/config/config.sh",
+      "archive": "CONTAINER/fedora44-ai-core/config/config.sh",
+      "sha256": "684e54440b47e893f12cbb95c6e0a90babaf5b1178117fd0a2df15f97a3fadca"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/config/container-instance-setup.py",
+      "archive": "CONTAINER/fedora44-ai-core/config/container-instance-setup.py",
+      "sha256": "b843982f5dcc7d2cb8f53ff884cc128581476f48ef7aca8ab1227587317ec52b"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/config/layer-setup.sh",
+      "archive": "CONTAINER/fedora44-ai-core/config/layer-setup.sh",
+      "sha256": "9899002973303c287202f81eddec8a35cc76d3988988a444ae07092341f110a1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/config/merge.sh",
+      "archive": "CONTAINER/fedora44-ai-core/config/merge.sh",
+      "sha256": "889181e70cac7d7fc5e8755e2fc905fc80aea6a1005fd08e1988d8d2393f5f03"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/config/optional_persistence.sh",
+      "archive": "CONTAINER/fedora44-ai-core/config/optional_persistence.sh",
+      "sha256": "9d2b809f756acfda905ebc03a998a7b2fbb7e16132f0b7f2b95513180a037720"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/config/quadlet_finish.py",
+      "archive": "CONTAINER/fedora44-ai-core/config/quadlet_finish.py",
+      "sha256": "3d71ce550d589192b487a859222a529bb2afdf541dd8108207d7c4b9bf48bf9c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core-additional.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core-additional.config.conf_example",
+      "sha256": "60a518a50d80d48f7a798e38692ca29259e6051c6c8bc5a64c5780c9dd21d0f8"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core-additional.container_example",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core-additional.container_example",
+      "sha256": "15e9ae701bf9257fdd3fe23382aba1e444daad8066af4077c14f3a8f99d81efd"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core-additional.env_example",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core-additional.env_example",
+      "sha256": "43c19451a0f0cd454a3fc43378948005723af56a3d32f6b3b3c83d46374c0daa"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core-additional.repos",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core-additional.repos",
+      "sha256": "038829526347c0d29a362d2028b560b9292ac46832ca4c5909f6de01c7309df3"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core.config.conf_example",
+      "sha256": "ccc07517c44c8df3528d723e84aef7b1ee855273e63789439100f3a6cc650c8f"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core.container_example",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core.container_example",
+      "sha256": "9b83e4121d094ff6374e4e6de9f15ee4174f6feea4faf845a9c3e90b47c0e392"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/fedora44-ai-core.env_example",
+      "archive": "CONTAINER/fedora44-ai-core/fedora44-ai-core.env_example",
+      "sha256": "531c90d58e5ad4fccc6674414507213149df397923178b912c8f18408a3b5c68"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/etc/systemd/system/fedora44-ai-init-hooks.service",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/etc/systemd/system/fedora44-ai-init-hooks.service",
+      "sha256": "51341bba91373d5c6ed53ccf2767507e4788b692575afbcbeb86b274fd186817"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/etc/systemd/system/hermes-dashboard.service",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/etc/systemd/system/hermes-dashboard.service",
+      "sha256": "6246019967d62077ae9b9b21185ac76ceb061a6b84eab5e845a6ec8272379b64"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/etc/systemd/system/hermes.service",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/etc/systemd/system/hermes.service",
+      "sha256": "969287a1d7a4941684bafd7a8297694462bd9535ea91d616ea8b6d2d7558254f"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/etc/systemd/system/openclaw.service",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/etc/systemd/system/openclaw.service",
+      "sha256": "ef7179b61d653a3a7d79445f5e470fa3269c5cfd1293830bcc37c5a94e9339ec"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/etc/systemd/system/vditor-notes.service",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/etc/systemd/system/vditor-notes.service",
+      "sha256": "8d8d09e7fbecb72b09082c593e4c6cc697cd279310360efe157a5e94b0816caa"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/lib/systemd/system-generators/fedora44-runtime-environment-generator",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/lib/systemd/system-generators/fedora44-runtime-environment-generator",
+      "sha256": "b927fe2d7e57ff0778b48ed4aadcedf607c1becd37ecd337771ef97624cacc26"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/local/bin/fedora44-ai-init-hooks",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/local/bin/fedora44-ai-init-hooks",
+      "sha256": "39bcbbc3162a1a62e74208af0e052af57809a50969b42a7d9371f1a5cf129f92"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/app.py",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/app.py",
+      "sha256": "b2ef3157ceecbe3b687064e78e900157110ac6e81f1b09ddcf6e3c552d483c2a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/index.html",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/index.html",
+      "sha256": "127d2dc59f232e8d64e5a4b1264fd5e8aafa8ce8546d59462097ee84f4692910"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/static/app.js",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/static/app.js",
+      "sha256": "c81ca94f31fb4678d85c27cc7696a431c5288df3aa58835dc1d0c95b0e2194fc"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/static/favicon.svg",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/static/favicon.svg",
+      "sha256": "96bb2c0d39906a0c7bb6d4a4633c3f3d65a5f24474e1a3d54aeac5caa9e0442e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/static/style.css",
+      "archive": "CONTAINER/fedora44-ai-core/image/runtime/usr/local/lib/vditor-notes/static/style.css",
+      "sha256": "166686dbe92f4fbbcdcd6f5473483eb377e863c71fbc539c86f0087a42b5c776"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-core/setup.sh",
+      "archive": "CONTAINER/fedora44-ai-core/setup.sh",
+      "sha256": "3101069329b796f725784a6ac1d404e05fbb47ecfb79e671b974fd52c813fc5a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/.dockerignore",
+      "archive": "CONTAINER/fedora44-ai-base/.dockerignore",
+      "sha256": "c0faffd7edc723bdb0964f089061ef65c68a8a1af08042198b132970d1b0bec1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/.gitignore",
+      "archive": "CONTAINER/fedora44-ai-base/.gitignore",
+      "sha256": "d599a48c8adccaf2a97b835be0f30f1a5db84522d6013de181cfde61d13fa822"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/Containerfile",
+      "archive": "CONTAINER/fedora44-ai-base/Containerfile",
+      "sha256": "4021119964d9397c28aa3c30da44688688aed9a5d29a01c2bf2341e85e93fa1d"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/README.md",
+      "archive": "CONTAINER/fedora44-ai-base/README.md",
+      "sha256": "52ae41e614323c08cadca2d73bb0a072049e34f31b0edf3a53137b51f2979260"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/build.conf",
+      "archive": "CONTAINER/fedora44-ai-base/build.conf",
+      "sha256": "68a0a6d2e3ac4d1c9278ed405d45cbdaccc66ee6a61c7cf4837d19490c9af193"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/build/build-local.sh",
+      "archive": "CONTAINER/fedora44-ai-base/build/build-local.sh",
+      "sha256": "ec33b026212e4b350332617f047c6f8c2bbf65f2ab9bfcfa805a2e02b762771e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/build/prepare-build-context.sh",
+      "archive": "CONTAINER/fedora44-ai-base/build/prepare-build-context.sh",
+      "sha256": "70261f10ea2cc2228456d0665fcefc253da1b220487fe07bef2b5ef92bd0f30a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/build/run-container-buildtime.sh",
+      "archive": "CONTAINER/fedora44-ai-base/build/run-container-buildtime.sh",
+      "sha256": "c844ba62f30a03828275bf09a4c73e526478f7fcd5fe0dc45737493c82a1ac7c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/config/config.sh",
+      "archive": "CONTAINER/fedora44-ai-base/config/config.sh",
+      "sha256": "684e54440b47e893f12cbb95c6e0a90babaf5b1178117fd0a2df15f97a3fadca"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/config/container-instance-setup.py",
+      "archive": "CONTAINER/fedora44-ai-base/config/container-instance-setup.py",
+      "sha256": "b843982f5dcc7d2cb8f53ff884cc128581476f48ef7aca8ab1227587317ec52b"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/config/layer-setup.sh",
+      "archive": "CONTAINER/fedora44-ai-base/config/layer-setup.sh",
+      "sha256": "9899002973303c287202f81eddec8a35cc76d3988988a444ae07092341f110a1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/config/merge.sh",
+      "archive": "CONTAINER/fedora44-ai-base/config/merge.sh",
+      "sha256": "889181e70cac7d7fc5e8755e2fc905fc80aea6a1005fd08e1988d8d2393f5f03"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/config/optional_persistence.sh",
+      "archive": "CONTAINER/fedora44-ai-base/config/optional_persistence.sh",
+      "sha256": "9d2b809f756acfda905ebc03a998a7b2fbb7e16132f0b7f2b95513180a037720"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/config/quadlet_finish.py",
+      "archive": "CONTAINER/fedora44-ai-base/config/quadlet_finish.py",
+      "sha256": "3d71ce550d589192b487a859222a529bb2afdf541dd8108207d7c4b9bf48bf9c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base-additional.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base-additional.config.conf_example",
+      "sha256": "122a986ece170f356c5f5dcf0792f679e70e3ceaf22f02ee173868720e41720e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base-additional.container_example",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base-additional.container_example",
+      "sha256": "a34df13cf7a1cc37ad1b3d1776ef44bfd77b61ac502c6f1a171de11fbbd2a2c0"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base-additional.env_example",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base-additional.env_example",
+      "sha256": "2b5b7fdd7d351ecaf61fa47a7f64171e5c264ae71e849fd2bd53253d6809939a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base-additional.repos",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base-additional.repos",
+      "sha256": "77d8b3497827e8b4656d4f80f1f2b01ee115b6e7b7f75906b004bae8a3aec3fa"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base.config.conf_example",
+      "sha256": "9d7c8f6a8f6c55a5a1c0f71e3749526e0c6f70dcda874bcac8ccd1b09e5d0bb3"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base.container_example",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base.container_example",
+      "sha256": "d601967bf66d6a492a219c611ded42edf929ff1a0004ef3ef90fa3acef8faa2a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/fedora44-ai-base.env_example",
+      "archive": "CONTAINER/fedora44-ai-base/fedora44-ai-base.env_example",
+      "sha256": "66795bbcbdb5589b35dacd5fe960d87b93b64432d10ee19af70c22a2bdce7bf9"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-base/setup.sh",
+      "archive": "CONTAINER/fedora44-ai-base/setup.sh",
+      "sha256": "3101069329b796f725784a6ac1d404e05fbb47ecfb79e671b974fd52c813fc5a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/.dockerignore",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/.dockerignore",
+      "sha256": "c0faffd7edc723bdb0964f089061ef65c68a8a1af08042198b132970d1b0bec1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/.gitignore",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/.gitignore",
+      "sha256": "96c828bfca0cf23bc8cfde494bf33f62d55e673d559fde240159ec0490949a2c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/Containerfile",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/Containerfile",
+      "sha256": "b4fcd1bf3846f515879f019d336b0b84bc55e5aec0b2942ef7cf058359a5b235"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/README.md",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/README.md",
+      "sha256": "dcd6050ab6daf8fe0e2f6037dd829266cf336f14610f88feb11b02786d7300e0"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/build.conf",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/build.conf",
+      "sha256": "159715457bdaa1fa841c8e7195c3da3ba54809494e8d42ba67e98a05405973b0"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/build/build-local.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/build/build-local.sh",
+      "sha256": "ec33b026212e4b350332617f047c6f8c2bbf65f2ab9bfcfa805a2e02b762771e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/build/prepare-build-context.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/build/prepare-build-context.sh",
+      "sha256": "70261f10ea2cc2228456d0665fcefc253da1b220487fe07bef2b5ef92bd0f30a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/build/run-container-buildtime.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/build/run-container-buildtime.sh",
+      "sha256": "c844ba62f30a03828275bf09a4c73e526478f7fcd5fe0dc45737493c82a1ac7c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/config/config.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/config/config.sh",
+      "sha256": "684e54440b47e893f12cbb95c6e0a90babaf5b1178117fd0a2df15f97a3fadca"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/config/container-instance-setup.py",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/config/container-instance-setup.py",
+      "sha256": "b843982f5dcc7d2cb8f53ff884cc128581476f48ef7aca8ab1227587317ec52b"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/config/layer-setup.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/config/layer-setup.sh",
+      "sha256": "9899002973303c287202f81eddec8a35cc76d3988988a444ae07092341f110a1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/config/merge.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/config/merge.sh",
+      "sha256": "889181e70cac7d7fc5e8755e2fc905fc80aea6a1005fd08e1988d8d2393f5f03"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/config/optional_persistence.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/config/optional_persistence.sh",
+      "sha256": "9d2b809f756acfda905ebc03a998a7b2fbb7e16132f0b7f2b95513180a037720"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/config/quadlet_finish.py",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/config/quadlet_finish.py",
+      "sha256": "3d71ce550d589192b487a859222a529bb2afdf541dd8108207d7c4b9bf48bf9c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.config.conf_example",
+      "sha256": "21bb2aef610f08a5eef189691b7cb76606ab3b9265f9bccfe44cd64cb166480c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.container_example",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.container_example",
+      "sha256": "6e03478faa7bf6a57be58dc2fb367985f721bc960381fd0e3dac9d9717ac16b1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.env_example",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.env_example",
+      "sha256": "d600af1c333fb47d7107fda035c1d6e77d4ff0a390a53f6e2ddda98778863beb"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.repos",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann-additional.repos",
+      "sha256": "05eb2321279548de1fdde2319c6b0259ddd24b025002219ccf9ca390bc2f502c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann.config.conf_example",
+      "sha256": "86d32cd27356d6914c0c954673789507702a689f251af83f1f3c135a56605294"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann.container_example",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann.container_example",
+      "sha256": "810cd2190635dff645415d91ab80ca728482c90a0317c201a10f6f88c4661286"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/fedora44-ai-kachelmann.env_example",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/fedora44-ai-kachelmann.env_example",
+      "sha256": "d5096ca060d0a086266dcfe99903aac11d71c19a79e033398e9cd654b0306187"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-kachelmann/setup.sh",
+      "archive": "CONTAINER/fedora44-ai-kachelmann/setup.sh",
+      "sha256": "3101069329b796f725784a6ac1d404e05fbb47ecfb79e671b974fd52c813fc5a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/.dockerignore",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/.dockerignore",
+      "sha256": "c0faffd7edc723bdb0964f089061ef65c68a8a1af08042198b132970d1b0bec1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/.gitignore",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/.gitignore",
+      "sha256": "315a6a3c8243367c6dab29874db94ece961fa7ab9e9d53427720b9595c65c597"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/Containerfile",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/Containerfile",
+      "sha256": "a3c301646b6e441a8c7d7f429520c88d48de279f34be269eabbd9d3d35e31c79"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/README.md",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/README.md",
+      "sha256": "ebf5528f2cb2e5b835381b8a709240163a3c7a2ffd935d807684ed9040246d90"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/build.conf",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/build.conf",
+      "sha256": "a9b1c0e1631a86dee7ce7dee660462d2b9c90a5f6ee22fbb96041852af67c1cc"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/build/build-local.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/build/build-local.sh",
+      "sha256": "ec33b026212e4b350332617f047c6f8c2bbf65f2ab9bfcfa805a2e02b762771e"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/build/prepare-build-context.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/build/prepare-build-context.sh",
+      "sha256": "70261f10ea2cc2228456d0665fcefc253da1b220487fe07bef2b5ef92bd0f30a"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/build/run-container-buildtime.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/build/run-container-buildtime.sh",
+      "sha256": "c844ba62f30a03828275bf09a4c73e526478f7fcd5fe0dc45737493c82a1ac7c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/config/config.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/config/config.sh",
+      "sha256": "684e54440b47e893f12cbb95c6e0a90babaf5b1178117fd0a2df15f97a3fadca"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/config/container-instance-setup.py",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/config/container-instance-setup.py",
+      "sha256": "b843982f5dcc7d2cb8f53ff884cc128581476f48ef7aca8ab1227587317ec52b"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/config/layer-setup.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/config/layer-setup.sh",
+      "sha256": "9899002973303c287202f81eddec8a35cc76d3988988a444ae07092341f110a1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/config/merge.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/config/merge.sh",
+      "sha256": "889181e70cac7d7fc5e8755e2fc905fc80aea6a1005fd08e1988d8d2393f5f03"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/config/optional_persistence.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/config/optional_persistence.sh",
+      "sha256": "9d2b809f756acfda905ebc03a998a7b2fbb7e16132f0b7f2b95513180a037720"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/config/quadlet_finish.py",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/config/quadlet_finish.py",
+      "sha256": "3d71ce550d589192b487a859222a529bb2afdf541dd8108207d7c4b9bf48bf9c"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.config.conf_example",
+      "sha256": "58ccab8d0efa7296b947bfeaf613d9407db48edeed0ffe352c0cd3249cba3e90"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.container_example",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.container_example",
+      "sha256": "6e03478faa7bf6a57be58dc2fb367985f721bc960381fd0e3dac9d9717ac16b1"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.env_example",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.env_example",
+      "sha256": "da2637eb6e4200d98efda948cfeb3a8a0bf28391707d0f1ed474f3efee70f2c4"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.repos",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999-additional.repos",
+      "sha256": "e8e8197fd089261196895bc281f374328dd9bf4d40f2475f3ec6f913af80516f"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999.config.conf_example",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999.config.conf_example",
+      "sha256": "9a6175771c16178526f237353b63e2b9b67ee4831ab68355d1b2077cec10aea4"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999.container_example",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999.container_example",
+      "sha256": "d0799d5bfa6ffbe6f53b22a01465fd0afd1b3f725c4b0a98a8d7b00103cec6fa"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/fedora44-ai-safrano9999.env_example",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/fedora44-ai-safrano9999.env_example",
+      "sha256": "aa2fa58d3662140ff64e3efed9a03832d48fc6ba9673a5bcabd91624678f6e5b"
+    },
+    {
+      "repository": "fedora-ai-safrano9999",
+      "source": "fedora44-ai-safrano9999/setup.sh",
+      "archive": "CONTAINER/fedora44-ai-safrano9999/setup.sh",
+      "sha256": "3101069329b796f725784a6ac1d404e05fbb47ecfb79e671b974fd52c813fc5a"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-core-pre-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-core-pre-image.yml",
+      "sha256": "3e5266403a904e2827d560d8b9b5974bb9f46c936f52ab9e0121a72147377b70"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-core-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-core-image.yml",
+      "sha256": "f2639ca1a6a8f412f129152d0957a1fa51bdff7c4930c4c8793bbf99707d6951"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-base-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-base-image.yml",
+      "sha256": "40013ec3d9004a57625880475ac7067c2c3e4b37dba5de0e78357c152aa2f8d7"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-kachelmann-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-kachelmann-image.yml",
+      "sha256": "60e9f6117bb1865d8a54e5e2dee172d6aa837dc57e92200779ed5a0d4b5900fd"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-safrano9999-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-safrano9999-image.yml",
+      "sha256": "82c4a38b1908f3ac2d10630730dd3a19f81eb86b9e43d997ed44f98208b7651a"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-example-chain.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/fedora-ai-safrano9999/workflows/fedora44-ai-example-chain.yml",
+      "sha256": "737e53c0e6ba49822ccd0395aa3c06e9fda91614276bd7b6af03f8f94c479b26"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": ".github/scripts/examplefiles-githubaction.py",
+      "archive": "projects/openclaw-ephemeral/.github/scripts/examplefiles-githubaction.py",
+      "sha256": "778d20087b4338faae361b0f08090aa88255c4371855a084034358a1faaf5207"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": ".github/scripts/free-runner-disk-space.sh",
+      "archive": "projects/openclaw-ephemeral/.github/scripts/free-runner-disk-space.sh",
+      "sha256": "502e2e1b0c38fd6d1125af09fca07b8267c2d625406f31b0c22b0597a727e27f"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": ".github/scripts/prune-container-build-space.sh",
+      "archive": "projects/openclaw-ephemeral/.github/scripts/prune-container-build-space.sh",
+      "sha256": "25a37fd91d5563328993454a2b13a15bc9705ca591254ea440b105dbb39c7ad0"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": ".github/workflows/container-image.yml",
+      "archive": "projects/openclaw-ephemeral/.github/workflows/container-image.yml",
+      "sha256": "dc3f9752e89349925a9c2e20a6e38a80c9c86f7eccedd2033a5a8e30d84756f6"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": ".github/workflows/examplefiles-githubaction.yml",
+      "archive": "projects/openclaw-ephemeral/.github/workflows/examplefiles-githubaction.yml",
+      "sha256": "04f1620ddac49b4b3d31de5d61e7769d54d3e169b0e9065e189a0f7fd8f3729c"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": ".gitignore",
+      "archive": "projects/openclaw-ephemeral/.gitignore",
+      "sha256": "3de5927ff37d364d0cc897982062ebafdd853ff7f4d1554b7b911d21a40e94a4"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "README.md",
+      "archive": "projects/openclaw-ephemeral/README.md",
+      "sha256": "5595703ec68a20d6ffbbf55cd6caba58d5c6bd37dd1cce98af54428490f71040"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "RELEASE.md",
+      "archive": "projects/openclaw-ephemeral/RELEASE.md",
+      "sha256": "9afa8a2a4ff464fd804c2819d12e022b7c234502ce179d6f2d2e74a10bd3686f"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "config.conf_example",
+      "archive": "projects/openclaw-ephemeral/config.conf_example",
+      "sha256": "9286e0ad0dcd58595141e4743dfc968178486af0d5b7c91ca1e2f3f6f1f3905e"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "container.example",
+      "archive": "projects/openclaw-ephemeral/container.example",
+      "sha256": "02a4b8c8be9d13a79e845a627f4ad32de06412241011211ff27b783d38db3eb7"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "container/Containerfile",
+      "archive": "projects/openclaw-ephemeral/container/Containerfile",
+      "sha256": "641306c7e8eb8d31f9ae02c91c3afb45c53710724150be189f5ea6d6efdaf3a3"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "container/build/install-note-release.sh",
+      "archive": "projects/openclaw-ephemeral/container/build/install-note-release.sh",
+      "sha256": "7646d3a3e959d1c6e20931cd56df7f00e7999a3860f768cf1b791f278b93abce"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "container/build/install-openclaw-deterministic.sh",
+      "archive": "projects/openclaw-ephemeral/container/build/install-openclaw-deterministic.sh",
+      "sha256": "975a458ff23054ef0caf8df42d475dacbefd0c2c9b050b0e78afb41ee36c1429"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "container/runtime/yolo.sh",
+      "archive": "projects/openclaw-ephemeral/container/runtime/yolo.sh",
+      "sha256": "3bae14eee4621107da05248003b3bf86d1e5d6e00760fcbfc78ff14a6a73b903"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "env.example",
+      "archive": "projects/openclaw-ephemeral/env.example",
+      "sha256": "d0323571ee300c5609641ae0164d232c3bf953cbfa64915e37382a9f056b0753"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "image/runtime/etc/systemd/system/openclaw-config.service",
+      "archive": "projects/openclaw-ephemeral/image/runtime/etc/systemd/system/openclaw-config.service",
+      "sha256": "b4bafe415e51f2a7433f98ac9a6472ff72e944c4b7034c9d957646d1e2f54ea0"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "image/runtime/etc/systemd/system/openclaw-ephemeral-schedule.service",
+      "archive": "projects/openclaw-ephemeral/image/runtime/etc/systemd/system/openclaw-ephemeral-schedule.service",
+      "sha256": "25123ee2c9bfa88c1ca890b9c39c93a0e11613f4ce360d910faac6afb400856a"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw-ephemeral.py",
+      "archive": "projects/openclaw-ephemeral/openclaw-ephemeral.py",
+      "sha256": "e49a6b5bec4f9070ef6be8bc591fb7c1dedbaca8290c4b5ac19551ce5d19b914"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/__init__.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/__init__.py",
+      "sha256": "06f6cf77ad44154b5f4c8e83b563f623a20d5bd2ed47f0b3e78ee812e7a5ce78"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/cli.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/cli.py",
+      "sha256": "5df18096afac8b8a6f0476d20c5d688bbed77b275027c984e8b46609a4358200"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/configuration.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/configuration.py",
+      "sha256": "580ebae3a6e626c9fd3eacb5201ba13d097cb614ca949c30a819a24a55d94c60"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/environment.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/environment.py",
+      "sha256": "18ed1cdcdca1d62f89f5c423aa1dfc159aec7122a70634a01179735a95f0b007"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/filesystem.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/filesystem.py",
+      "sha256": "eb6890eb928be0533ecadf3e0223ee67e020ab5ba8ec67398539c9a59bc4121e"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/plugins.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/plugins.py",
+      "sha256": "0090f3d120f9b7ccd6a0195040af6b733fcde67d1802d50b33dee19d80b08ae7"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/providers.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/providers.py",
+      "sha256": "d2709a957f6913d85b2dabfdec6988d8d4d83bc9e07c9f27d57a6b2e96efe642"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "openclaw_ephemeral/scheduling.py",
+      "archive": "projects/openclaw-ephemeral/openclaw_ephemeral/scheduling.py",
+      "sha256": "15c2e438b9a9cea0ab89427c4d47629c8f0cd8a1007632a4eaa5253938ce5b14"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/__init__.py",
+      "archive": "projects/openclaw-ephemeral/tests/__init__.py",
+      "sha256": "f5b80e3628986192facb122ead219aa0eb41ee6abe357d98a734f35006378c45"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_cli.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_cli.py",
+      "sha256": "a341ee8f7ee7e90307bb030db40f86d96d15d873ad5fe4c544b2a16c97c9951e"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_configuration.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_configuration.py",
+      "sha256": "e5833065b915d7a069be3dd3e8b439322fe89ec6f2f22c8e7ecf089e88e4642e"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_environment.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_environment.py",
+      "sha256": "38f8b7e5ba3deefa6541432eb642edd2498c5852f1aee9df2f2a28ec35ee59c2"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_filesystem.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_filesystem.py",
+      "sha256": "e422fac0859bc535eae26e140b60141d94e62918d17c55505b7f4b6021d0af23"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_policy_script.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_policy_script.py",
+      "sha256": "cc68c2de2101371522c180e13cd196ddf202032bc27c1a2b086d30080b32c788"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_providers.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_providers.py",
+      "sha256": "eb74a832f501ad9e301b819833b01279861df81eae5866e7a357380dbcbddb28"
+    },
+    {
+      "repository": "openclaw-ephemeral",
+      "source": "tests/test_scheduling.py",
+      "archive": "projects/openclaw-ephemeral/tests/test_scheduling.py",
+      "sha256": "04e1a6c80e5253f55c90b4252f5466999daa6583904437861614004c31a78b24"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/openclaw-ephemeral/workflows/container-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/openclaw-ephemeral/workflows/container-image.yml",
+      "sha256": "dc3f9752e89349925a9c2e20a6e38a80c9c86f7eccedd2033a5a8e30d84756f6"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/openclaw-ephemeral/workflows/examplefiles-githubaction.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/githubactions/openclaw-ephemeral/workflows/examplefiles-githubaction.yml",
+      "sha256": "04f1620ddac49b4b3d31de5d61e7769d54d3e169b0e9065e189a0f7fd8f3729c"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "safrano9999-automatisation/build-container-images.json",
+      "archive": "archives/2026-09-11-fedora-normalization/build-container-images.json",
+      "sha256": "a6b48c031457e68f7bb43053079c6c1cade5a5b9d531c9438a49eea46ae11fbb"
+    },
+    {
+      "repository": "SCRIPTS",
+      "source": "githubactions/fedora-ai-safrano9999/workflows/safrano9999-openclaw-image.yml",
+      "archive": "archives/2026-09-11-fedora-normalization/safrano9999-openclaw-image.yml",
+      "sha256": "09c906f5cd1dc7546f3dfbe6fa1eb4686e8931711e8766ce048ae64447239a1f"
+    }
+  ],
+  "source_commits": {
+    "fedora-ai-safrano9999": "839b8667224b97a4da5496353a1b4e611be92b26",
+    "SCRIPTS": "1024a5b03eb790ca9d0cacea19f572581f33f2d3",
+    "original-openclaw-ephemeral": "32e6034db19ec9610e560eb777155626729d49ed"
+  },
+  "archived_repository": "https://github.com/safrano9999/MUSEUM-openclaw-ephemeral",
+  "current_repository": "https://github.com/safrano9999/openclaw-ephemeral"
+}

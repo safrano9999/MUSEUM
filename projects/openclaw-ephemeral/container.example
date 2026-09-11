@@ -1,0 +1,7 @@
+# Container port block: 2=20000-29999, 3=30000-39999,
+# 4=40000-49999, 5=50000-59999, blank=manual.
+#default-preset: 2
+CONTAINER_NR=2
+
+#required: OpenClaw published gateway port
+OPENCLAW_GATEWAY_PUBLISH_PORT=18789
