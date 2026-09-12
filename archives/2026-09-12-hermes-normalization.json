@@ -1,0 +1,36 @@
+{
+  "archived_source": {
+    "original_repository": "safrano9999/hermes-ephemeral",
+    "history_repository": "safrano9999/MUSEUM-hermes-ephemeral",
+    "commit": "71945ae6d5162db567dbce305d83f1ccadd05b5e"
+  },
+  "active_source": {
+    "previous_repository": "safrano9999/hermes-ephemeral-latest",
+    "repository": "safrano9999/hermes-ephemeral",
+    "commit_before_name_cleanup": "b38d16565ddf272ccc97b4dc305b0d9cf11d3bbe"
+  },
+  "sha256": {
+    "projects/hermes-ephemeral/.github/scripts/examplefiles-githubaction.py": "778d20087b4338faae361b0f08090aa88255c4371855a084034358a1faaf5207",
+    "projects/hermes-ephemeral/.github/workflows/ci.yml": "1e947d502741a0c6c8b3c06144f8c1a0f99c8db8f0b31f6fe8c6b1b407343ef5",
+    "projects/hermes-ephemeral/.github/workflows/examplefiles-githubaction.yml": "04f1620ddac49b4b3d31de5d61e7769d54d3e169b0e9065e189a0f7fd8f3729c",
+    "projects/hermes-ephemeral/.gitignore": "a648d8f933e78796098b8a250bb1e2ebc4c5d1908c65a5fa4cb655efb4fd50b2",
+    "projects/hermes-ephemeral/README.md": "23c2d48529198c32357334689c446ecdc1a0ace6b7cdef0599b383d429d724f8",
+    "projects/hermes-ephemeral/config.conf_example": "f8528e023d85229cf32e8f2019674c9e7eeecab69d33dc90f1e3298163752e30",
+    "projects/hermes-ephemeral/container.example": "9bd0f47c9d819b7fb3adf70ef8e6acf1edeb02eafbce3ccc74f7b666e78013fd",
+    "projects/hermes-ephemeral/env.example": "dafc51cb3eb8f13fc02eec5dbd62699f9a40e2cb68d56b3933194dc54ddb6f76",
+    "projects/hermes-ephemeral/image/runtime/etc/systemd/system/hermes-ephemeral.service": "f04a04ed2f337beafe698a47e488c3c08db9b4fee3e1b1d21548521002fbcf4f",
+    "projects/hermes-ephemeral/image/runtime/usr/local/bin/hermes-ephemeral": "586561fe2af5c440565373d1318746425e0fab3f00c13446881e2c8400029550",
+    "projects/hermes-ephemeral/image/runtime/usr/local/lib/hermes-ephemeral/hermes_ephemeral/__init__.py": "373bcd927492f1481834299b1c699a0f912c9c6a93c6daeaa41a4b074c724e6e",
+    "projects/hermes-ephemeral/image/runtime/usr/local/lib/hermes-ephemeral/hermes_ephemeral/cli.py": "3f336cb2fc010f75d05fb6f04c8e01fcbdd78d423214d422a1c763dcae234156",
+    "projects/hermes-ephemeral/image/runtime/usr/local/lib/hermes-ephemeral/hermes_ephemeral/configuration.py": "d137292b5d6d9896c9cf3e4d53614aa7ede82f73d31e09d3bf18e29661447577",
+    "projects/hermes-ephemeral/image/runtime/usr/local/lib/hermes-ephemeral/hermes_ephemeral/environment.py": "75c10ebf42b551e1d73ec157289efb00359faf6372a3dac00c2413b963570135",
+    "projects/hermes-ephemeral/image/runtime/usr/local/lib/hermes-ephemeral/hermes_ephemeral/mcp.py": "fbc8b1e0d67ff7d79df09d8e4e7de4989b95b9044e89b1d1b5c1bad7dc14ad23",
+    "projects/hermes-ephemeral/image/runtime/usr/local/lib/hermes-ephemeral/hermes_ephemeral/providers.py": "332f372ea0160c023e75cea3dcf01263d35833b70cda9ea61ebef19fe538f84c",
+    "projects/hermes-ephemeral/tests/test_configuration.py": "6e2367110339b60d362c3602fdf5d60115f3f155c5f2ba0d5ba8e8be8e234d07",
+    "projects/hermes-ephemeral/tests/test_environment.py": "e0d4a893cac92f5f49b294f15cf68e6f1c967c29debdc9438eca7b296000292b",
+    "projects/hermes-ephemeral/tests/test_mcp.py": "c067787ad55e02722e4a727fa55a09334924e23fe635104881a9a0ae3168d93a",
+    "projects/hermes-ephemeral/tests/test_providers.py": "67a04ce8ed35a7b9aa79132a006bfef2a626db3168b62bb34ec4f617ee6937c8",
+    "projects/hermes-ephemeral/tests/test_systemd.py": "b2c4df94dc2d4179bcc444bdd95585c284d78c9f6a1b1205049ad4829c839ccc",
+    "archives/2026-09-12-hermes-normalization/hermes-ephemeral-latest-ci.yml": "ed726749fcb031114f50c4a5d4ebf17ce72d43e6961f8263d166c1cdb1d6789d"
+  }
+}

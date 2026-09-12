@@ -1,0 +1,16 @@
+[Unit]
+Description=Rebuild ephemeral Hermes configuration
+Requires=persistainer.service
+Wants=network-online.target fedora44-ai-init-hooks.service tailscale-up.service
+After=network-online.target persistainer.service fedora44-ai-init-hooks.service tailscale-up.service
+Before=hermes.service
+
+[Service]
+Type=oneshot
+ExecCondition=/bin/sh -c '[ "$${HERMES_START:-1}" = "1" ]'
+ExecStart=/usr/local/bin/hermes-ephemeral configure
+RemainAfterExit=yes
+TimeoutStartSec=450
+
+[Install]
+WantedBy=multi-user.target
