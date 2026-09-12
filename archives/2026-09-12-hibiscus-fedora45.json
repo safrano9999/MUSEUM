@@ -1,0 +1,30 @@
+{
+  "archived_source": {
+    "original_repository": "safrano9999/HIBISCUS-FEDORA44",
+    "history_repository": "safrano9999/MUSEUM-HIBISCUS-FEDORA44",
+    "commit": "65a74005a94404dc0f0d8670b1089270200a0bac"
+  },
+  "active_source": {
+    "repository": "safrano9999/HIBISCUS-FEDORA45",
+    "commit": "99c1e4d5024a7f19b17f870cf9ba47afd260baab"
+  },
+  "sha256": {
+    "projects/HIBISCUS-FEDORA44/.dockerignore": "4790c88bcf45f4d5f8bcd02905492658c4e25e7fc5f3c2ffacbfe166fc372aa5",
+    "projects/HIBISCUS-FEDORA44/.github/scripts/examplefiles-githubaction.py": "778d20087b4338faae361b0f08090aa88255c4371855a084034358a1faaf5207",
+    "projects/HIBISCUS-FEDORA44/.github/workflows/container-image.yml": "1fd2c59d65920fd6b2407ae5504d34d74eb37f26c8cf26d735e646a9fe689cae",
+    "projects/HIBISCUS-FEDORA44/.github/workflows/examplefiles-githubaction.yml": "04f1620ddac49b4b3d31de5d61e7769d54d3e169b0e9065e189a0f7fd8f3729c",
+    "projects/HIBISCUS-FEDORA44/.gitignore": "af5738def727d69241bbaa36b77fedfbeaa2638b514cea80b366e31d2ca01fd9",
+    "projects/HIBISCUS-FEDORA44/Containerfile": "a0db1c4996ad82b8e49bd29d7a25ab16174077cf082193dcf68365951209539e",
+    "projects/HIBISCUS-FEDORA44/README.md": "f7b593d567b2db3d07e180943e9507c08a8d25fbb16c1d58f823756e731404fb",
+    "projects/HIBISCUS-FEDORA44/config.conf_example": "f621b1a69406ae53ab4cae961429ddf6a62dea17e896c98278a5ee07fe634c21",
+    "projects/HIBISCUS-FEDORA44/config.sh": "684e54440b47e893f12cbb95c6e0a90babaf5b1178117fd0a2df15f97a3fadca",
+    "projects/HIBISCUS-FEDORA44/container.example": "98bf18e15cc65c8e7ee523b62ce78b2f0fe9df6aac0931b44808d2779897b320",
+    "projects/HIBISCUS-FEDORA44/env.example": "16be97d389062ec972be5e2f0b395c28cad1094c093de3f4a39a524ca66bac1d",
+    "projects/HIBISCUS-FEDORA44/setup.sh": "533ccdad4c2baa0d2769daae081aae503a45c9f6c51c91cc3ee8b99cfd63f96e",
+    "projects/HIBISCUS-FEDORA44/systemd/hibiscus-fedora44-mcp.service": "395816ca9f8f269026aca6c1c26e6e0cba8c62054fe8dd2f4622ceba3fcdfb76",
+    "projects/HIBISCUS-FEDORA44/systemd/hibiscus-fedora44.service": "45ead77764d9620203b5c093d005ce77b482742193966932b5e4f93d0ebe743c",
+    "projects/HIBISCUS-FEDORA44/systemd/hibiscus-fedora44.target": "a000805a53c66c6124fd5b8a36c1943810261dfdb8e4f606401315092cd4b151",
+    "archives/2026-09-12-hibiscus-fedora45/githubactions/HIBISCUS-FEDORA44/workflows/container-image.yml": "1fd2c59d65920fd6b2407ae5504d34d74eb37f26c8cf26d735e646a9fe689cae",
+    "archives/2026-09-12-hibiscus-fedora45/githubactions/HIBISCUS-FEDORA44/workflows/examplefiles-githubaction.yml": "04f1620ddac49b4b3d31de5d61e7769d54d3e169b0e9065e189a0f7fd8f3729c"
+  }
+}

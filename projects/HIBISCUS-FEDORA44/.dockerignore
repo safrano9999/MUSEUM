@@ -1,0 +1,7 @@
+.git
+.env
+*.env
+*_config.conf
+*_container.conf
+*.container
+*-compose.yml

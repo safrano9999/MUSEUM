@@ -1,0 +1,112 @@
+# Source of truth: SCRIPTS/githubactions. Generated copies are overwritten.
+name: HIBISCUS-FEDORA44 container image
+run-name: ${{ inputs.monitor_id != '' && format('{0} [monitor:{1}:{2}]', github.workflow, inputs.monitor_id, inputs.monitor_final) || github.workflow }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to publish. Empty uses YYYY.M.D."
+        required: false
+        default: ""
+      push_latest:
+        description: "Also publish :latest"
+        required: true
+        type: boolean
+        default: true
+      monitor_id:
+        description: "Optional event-monitor correlation id"
+        required: false
+        default: ""
+        type: string
+      monitor_final:
+        description: "This run is the final monitored cascade stage"
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: hibiscus-fedora44-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      IMAGE_NAME: ghcr.io/safrano9999/hibiscus-fedora44
+      HIBISCUS_FEDORA44_MCP_IMAGE: ghcr.io/safrano9999/hibiscus-mcp:latest
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Resolve image tags
+        id: tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ inputs.image_tag }}"
+          if [ -z "$version" ]; then
+            version="$(date -u +%Y.%-m.%-d)"
+          fi
+          [[ "$version" =~ ^[A-Za-z0-9_.-]+$ ]]
+          {
+            echo "version=$version"
+            echo "tags<<EOF"
+            echo "${IMAGE_NAME}:${version}"
+            if [ "${{ inputs.push_latest }}" = true ]; then
+              echo "${IMAGE_NAME}:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          cache-binary: false
+          keep-state: false
+          cleanup: true
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and publish HIBISCUS-FEDORA44
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Containerfile
+          platforms: linux/amd64
+          build-args: |
+            HIBISCUS_FEDORA44_MCP_IMAGE=${{ env.HIBISCUS_FEDORA44_MCP_IMAGE }}
+          pull: true
+          no-cache: true
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Smoke-test published image
+        env:
+          IMAGE_TAG: ${{ steps.tags.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="${IMAGE_NAME}:${IMAGE_TAG}"
+          docker pull "$image"
+          test "$(docker image inspect --format '{{json .Config.Cmd}}' "$image")" = '["/sbin/init"]'
+          docker run --rm --entrypoint /bin/bash "$image" -lc '
+            set -euo pipefail
+            test -f /usr/local/hibiscus/plugins/hibiscus/lib/hbci4j-core-4.1.12.jar
+            node --check /opt/hibiscus-mcp/server.mjs
+            systemd-analyze verify hibiscus-fedora44.service hibiscus-fedora44-mcp.service hibiscus-fedora44.target
+            java --version
+          '
