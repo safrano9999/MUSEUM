@@ -19,3 +19,9 @@
 - Previous Fedora44 sources: [projects/HIBISCUS-FEDORA44](projects/HIBISCUS-FEDORA44); complete Git history: [MUSEUM-HIBISCUS-FEDORA44](https://github.com/safrano9999/MUSEUM-HIBISCUS-FEDORA44).
 - Active repository and image: [HIBISCUS-FEDORA45](https://github.com/safrano9999/HIBISCUS-FEDORA45), `ghcr.io/safrano9999/hibiscus-fedora45:latest`.
 - Source commits and file checksums: [archive manifest](archives/2026-09-12-hibiscus-fedora45.json).
+
+## Retired MCP bridge and LiteLLM custom image — 2026-10-22
+
+- [Vikunja-MCP](projects/Vikunja-MCP); full history: [MUSEUM-Vikunja-MCP](https://github.com/safrano9999/MUSEUM-Vikunja-MCP).
+- [litellm-database-chatgpt-reasoning](projects/litellm-database-chatgpt-reasoning); full history: [MUSEUM-litellm-database-chatgpt-reasoning](https://github.com/safrano9999/MUSEUM-litellm-database-chatgpt-reasoning).
+- Source commits, verified Git bundles and checksums: [archive manifest](archives/2026-10-22-retired-mcp-and-litellm.json).

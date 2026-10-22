@@ -1,0 +1,138 @@
+# Source of truth: SCRIPTS/githubactions. Generated copies are overwritten.
+name: Vikunja MCP container image
+run-name: ${{ inputs.monitor_id != '' && format('{0} [monitor:{1}:{2}]', github.workflow, inputs.monitor_id, inputs.monitor_final) || github.workflow }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to publish. Empty uses YYYY.M.D."
+        required: false
+        default: ""
+      push_latest:
+        description: "Also publish :latest"
+        required: true
+        type: boolean
+        default: true
+      monitor_id:
+        description: "Optional event-monitor correlation id"
+        required: false
+        default: ""
+        type: string
+      monitor_final:
+        description: "This run is the final monitored cascade stage"
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: vikunja-mcp-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      IMAGE_NAME: ghcr.io/safrano9999/vikunja-mcp
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Resolve image tags
+        id: tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ inputs.image_tag }}"
+          if [ -z "$version" ]; then
+            version="$(date -u +%Y.%-m.%-d)"
+          fi
+          [[ "$version" =~ ^[A-Za-z0-9_.-]+$ ]]
+          {
+            echo "version=$version"
+            echo "tags<<EOF"
+            echo "${IMAGE_NAME}:${version}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          cache-binary: false
+          keep-state: false
+          cleanup: true
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build candidate
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .github/scripts/Containerfile
+          platforms: linux/amd64
+          pull: true
+          no-cache: true
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            io.safrano9999.build.commit=${{ github.sha }}
+
+      - name: Smoke-test published image
+        env:
+          IMAGE_TAG: ${{ steps.tags.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="${IMAGE_NAME}@${{ steps.build.outputs.digest }}"
+          docker pull "$image"
+          container_id="$(docker run -d \
+            -e VIKUNJA_DATABASE_TYPE=sqlite \
+            -e VIKUNJA_DATABASE_PATH=/tmp/vikunja-ci.db \
+            -e VIKUNJA_SERVICE_SECRET=ci-only-secret \
+            -e VIKUNJA_SERVICE_PUBLICURL=http://127.0.0.1:3456/ \
+            "$image")"
+          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 45); do
+            if ! docker inspect --format '{{.State.Running}}' "$container_id" | grep -qx true; then
+              docker logs "$container_id"
+              exit 1
+            fi
+            if docker exec "$container_id" wget -qO- http://127.0.0.1:3456/api/v1/info >/dev/null \
+              && docker exec "$container_id" wget -qO- http://127.0.0.1:8000/healthz | grep -qx ok \
+              && docker exec "$container_id" grep -Fq "this.request('/tasks', 'GET'" /opt/vikunja-mcp/node_modules/node-vikunja/dist/esm/services/task.service.js \
+              && docker exec "$container_id" grep -Fq 'members/${encodeURIComponent(username)}/admin' /opt/vikunja-mcp/dist/tools/teams.js \
+              && docker exec "$container_id" grep -Fq 'is_public: args.isPublic ?? currentTeam.is_public ?? false' /opt/vikunja-mcp/dist/tools/teams.js; then
+              code="$({ docker exec "$container_id" wget -qSO- \
+                --post-data='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+                --header='Content-Type: application/json' \
+                http://127.0.0.1:8000/mcp || true; } \
+                2>&1 >/dev/null | awk '/HTTP\//{print $2; exit}')"
+              test "$code" = 401
+              docker cp .github/scripts/verify-runtime.mjs "$container_id:/tmp/verify-runtime.mjs"
+              docker exec "$container_id" node /tmp/verify-runtime.mjs
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$container_id"
+          exit 1
+
+      - name: Promote tested latest
+        if: ${{ inputs.push_latest }}
+        env:
+          CANDIDATE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "${IMAGE_NAME}@${CANDIDATE_DIGEST}"

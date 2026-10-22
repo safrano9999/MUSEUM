@@ -1,0 +1,36 @@
+{
+  "upstream_commit": "f8126c76748498ba08f40df9f71fbebe84cf2387",
+  "base_commit": "79645770fedc7ec2627e6468d31062f20f82aecc",
+  "patch_sha256": "355b2ea1ba72b77461d372c2f372decc03c9a7fcc1eec5b157ae57e5378d2009",
+  "files": [
+    "litellm/responses/mcp/mcp_streaming_iterator.py",
+    "litellm/responses/streaming_iterator.py",
+    "litellm/router.py",
+    "tests/test_litellm/llms/chatgpt/responses/test_chatgpt_responses_transformation.py",
+    "tests/test_litellm/responses/test_streaming_iterator_output_recovery.py"
+  ],
+  "version": "1.104.0",
+  "base_image": "ghcr.io/berriai/litellm-database",
+  "base_digest": "sha256:fbe28229d2d02181c0a7d9df9599de614b491f3d897d2d7da18404f088310218",
+  "runtime_patch": "patches/pr31332-runtime.patch",
+  "runtime_patch_sha256": "824418aa86bda017f538b052429514e06432a8cb7865f44167dde3c7105e788b",
+  "base_checksums": "patches/base-v1.104.0.sha256",
+  "upstream_diff": "patches/upstream-f8126c7.diff",
+  "test_sha256": {
+    "test_streaming_iterator_output_recovery.py": "cb3883442d7d31c3bd3bdc361ce8ded0743f46ec28a2595f518e442a1dcbc625",
+    "test_chatgpt_responses_transformation.py": "f538af99407ef6aae9d6dfa122f7784104b6a846114f7133f6e32583eab9c78c",
+    "test_chatgpt_stream_bridge.py": "e49952682289097c0665c36575b639d581431c4f2aa0d73dd3b6e754ce843444"
+  },
+  "adaptation": "None: exact runtime hunks from upstream-f8126c7.diff applied to v1.104.0; only upstream test-file hunks excluded.",
+  "test_sources": {
+    "test_streaming_iterator_output_recovery.py": {
+      "commit": "f8126c76748498ba08f40df9f71fbebe84cf2387",
+      "path": "tests/test_litellm/responses/test_streaming_iterator_output_recovery.py"
+    },
+    "test_chatgpt_responses_transformation.py": {
+      "base_commit": "18243cd7af4c3325165ba68b21379e2719e051c7",
+      "patch_commit": "f8126c76748498ba08f40df9f71fbebe84cf2387",
+      "path": "tests/test_litellm/llms/chatgpt/responses/test_chatgpt_responses_transformation.py"
+    }
+  }
+}

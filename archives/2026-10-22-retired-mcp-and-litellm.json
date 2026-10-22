@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-22",
+  "reason": "Retired own Vikunja MCP bridge and superseded LiteLLM custom image at operator request. Production uses upstream whitelist images.",
+  "repositories": [
+    {
+      "original_repository": "safrano9999/Vikunja-MCP",
+      "history_repository": "safrano9999/MUSEUM-Vikunja-MCP",
+      "commit": "f4f102e96f5f270df5781214ac38ad7dd3026978",
+      "project_path": "projects/Vikunja-MCP",
+      "local_checkout_path": ".local-checkouts/vikunja-mcp",
+      "bundle": {
+        "path": "archives/2026-10-22-retired-mcp-and-litellm/Vikunja-MCP.bundle",
+        "bytes": 51450,
+        "sha256": "99979571a77e4ee44c0c2fc55e4ca44ad77763d395f9dce50e11d06edff212b6",
+        "verified_complete": true
+      },
+      "files_sha256": {
+        "projects/Vikunja-MCP/.dockerignore": "5693a205ef8d1b82df34d336d978ebc5d7382b762415d0171c6e2b444c1d265a",
+        "projects/Vikunja-MCP/.gitignore": "55f2571e00519883275ac5278a1a9fe3a1afa9166830d62ba323a0aa4cad5b01",
+        "projects/Vikunja-MCP/Containerfile": "0dc77cb66adfe7c3ade5ec2022876210f4349500bde7d084d8d6654b6bdee014",
+        "projects/Vikunja-MCP/README.md": "5cb97f289b09db5d1fff8987935ccf1bc71e93022768e2ddf8a1529bed384bcf",
+        "projects/Vikunja-MCP/config.conf_example": "e3783b0c8c31b3ed74915edd3d9dc31e29624a1a26fd2aebff18be000a0baeda",
+        "projects/Vikunja-MCP/config.sh": "ddea2230015a96cd6292cf96f5a2e5b766b8fa4027df50b98264177bd0d2b3dc",
+        "projects/Vikunja-MCP/container.example": "a8a20d58365a393d4678dd3eaa9201138ba0c4f14418884889c7a5c448840cf4",
+        "projects/Vikunja-MCP/entrypoint.sh": "423ae3c7f0ab8ecf934aa851c03cfe381d452749fee9c5f94ba4943969e54653",
+        "projects/Vikunja-MCP/env.example": "3304c889081e53b2f06268576005fa82720c6ba30c98595697bc7f1c54cfcc07",
+        "projects/Vikunja-MCP/setup.sh": "2926723a292852a99fb2ac7f7ddd4a704840cf8a86d4eb53fd6d21892f96c1a7",
+        "projects/Vikunja-MCP/patches/supergateway-bearer.patch": "1d8c1248d0a8a7b0a6e1a71cfcbbe1e20ce64c05683eab39681796174be4bdc3",
+        "projects/Vikunja-MCP/patches/verify-supergateway.mjs": "1d5f0718946e69e41e046b64ae5fbc0ea31d304d315c0daca237c085390c986c",
+        "projects/Vikunja-MCP/.github/scripts/Containerfile": "0dc77cb66adfe7c3ade5ec2022876210f4349500bde7d084d8d6654b6bdee014",
+        "projects/Vikunja-MCP/.github/scripts/patch-vikunja-mcp.py": "c52607624e53fa28964fefae8e738362522e632bcb4f16444176a7c6b4a44029",
+        "projects/Vikunja-MCP/.github/scripts/verify-runtime.mjs": "1005d2e44fb262e9b5f8cb23f3bbfe38602d98a939c4e83c1e8e8569169f53d7",
+        "projects/Vikunja-MCP/.github/workflows/container-image.yml": "0ac988156ac7c8d33e9636651bf7fef8e0d95ddb85f6d2ff01fde9b981c9b8b2"
+      }
+    },
+    {
+      "original_repository": "safrano9999/litellm-database-chatgpt-reasoning",
+      "history_repository": "safrano9999/MUSEUM-litellm-database-chatgpt-reasoning",
+      "commit": "40b838ea4e760aaa39e670c2528f9599b50aa8a3",
+      "project_path": "projects/litellm-database-chatgpt-reasoning",
+      "local_checkout_path": ".local-checkouts/litellm-database-chatgpt-reasoning",
+      "bundle": {
+        "path": "archives/2026-10-22-retired-mcp-and-litellm/litellm-database-chatgpt-reasoning.bundle",
+        "bytes": 38817,
+        "sha256": "9ebbcc16466d3552b0da70f96ef6caec203687444c4f41a5cb38e95c9e9ca215",
+        "verified_complete": true
+      },
+      "files_sha256": {
+        "projects/litellm-database-chatgpt-reasoning/.dockerignore": "dfe70d556f69abd4a96327d7c92bee4a9e355883dbdc85696b955d41788bdf3e",
+        "projects/litellm-database-chatgpt-reasoning/.gitignore": "a18f47855ddf86afb3c6337131a05808949fadca6337aab1d604752433e1c727",
+        "projects/litellm-database-chatgpt-reasoning/Containerfile": "94f8ed82a9527c3cc5d5288ca7d7eaa6a0f049df56e9d8b8a72235ffe037964b",
+        "projects/litellm-database-chatgpt-reasoning/README.md": "8b9b7ff111be613f31269803b36d976b35607fd5ff8b723a8aa5b68036285c59",
+        "projects/litellm-database-chatgpt-reasoning/patches/base-v1.101.0.sha256": "798788ce1a0439b40d665176e556dcae4b72ecc77cab75fa0de857fc317cb524",
+        "projects/litellm-database-chatgpt-reasoning/patches/base-v1.104.0.sha256": "80f9b0847da5bf680692e84d1433812be1d6b24b5d7884e45eaeb88ee6f9c6cf",
+        "projects/litellm-database-chatgpt-reasoning/patches/base-v1.98.0.sha256": "8e604aba2444b8c161eb52095166d5fb96e0eed3f7b0b0bb2f59dd54169d84ec",
+        "projects/litellm-database-chatgpt-reasoning/patches/manifest.json": "fe818f1e3b9e5fe53fba28e865010ef36c652c06218e342b2277fe37525bfff5",
+        "projects/litellm-database-chatgpt-reasoning/patches/pr31332-runtime.patch": "824418aa86bda017f538b052429514e06432a8cb7865f44167dde3c7105e788b",
+        "projects/litellm-database-chatgpt-reasoning/patches/upstream-f8126c7.diff": "355b2ea1ba72b77461d372c2f372decc03c9a7fcc1eec5b157ae57e5378d2009",
+        "projects/litellm-database-chatgpt-reasoning/patches/v1.101.0-pr31332.patch": "35193e2744768ce85d46f3d68ad47bb511faa4b2969d8ce309fc8d36d635479d",
+        "projects/litellm-database-chatgpt-reasoning/patches/v1.98.0-pr31332.patch": "6d985ed100cb0aec2b886ee3d0eb9206e7370289d1ada0a065c0da0f2eedd269",
+        "projects/litellm-database-chatgpt-reasoning/tests/test_chatgpt_responses_transformation.py": "f538af99407ef6aae9d6dfa122f7784104b6a846114f7133f6e32583eab9c78c",
+        "projects/litellm-database-chatgpt-reasoning/tests/test_chatgpt_stream_bridge.py": "e49952682289097c0665c36575b639d581431c4f2aa0d73dd3b6e754ce843444",
+        "projects/litellm-database-chatgpt-reasoning/tests/test_streaming_iterator_output_recovery.py": "cb3883442d7d31c3bd3bdc361ce8ded0743f46ec28a2595f518e442a1dcbc625",
+        "projects/litellm-database-chatgpt-reasoning/.github/scripts/Containerfile": "94f8ed82a9527c3cc5d5288ca7d7eaa6a0f049df56e9d8b8a72235ffe037964b",
+        "projects/litellm-database-chatgpt-reasoning/.github/scripts/verify-image.py": "15c015ccacc730c26095aaaa7c75085e3da477a8e3d77394f595999a1551e443",
+        "projects/litellm-database-chatgpt-reasoning/.github/scripts/verify-sources.py": "f5e0955e62582c1b3086decfded5b3f77b77abf050a36374da34319efcbda66e",
+        "projects/litellm-database-chatgpt-reasoning/.github/workflows/container-image.yml": "3e37873ab6c5bbd802529faa10b60d2431c205bc2c845ea9985915906c229842"
+      }
+    }
+  ]
+}

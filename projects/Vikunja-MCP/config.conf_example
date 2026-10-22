@@ -1,0 +1,22 @@
+#default-preset: 3456
+#required: Vikunja web and API port
+VIKUNJA_PORT=3456
+
+#default-preset: 8000
+#required: Streamable HTTP MCP port
+VIKUNJA_MCP_PORT=8000
+
+#default-preset: /mcp
+#required: Streamable HTTP MCP path
+VIKUNJA_MCP_PATH=/mcp
+
+#default-preset: http://127.0.0.1:3456/api/v1
+#required: internal Vikunja API URL for MCP children
+VIKUNJA_API_URL=http://127.0.0.1:3456/api/v1
+
+#default-preset: 3600000
+VIKUNJA_MCP_SESSION_TIMEOUT=3600000
+
+#choices: debug info none
+#default-preset: info
+VIKUNJA_MCP_LOG_LEVEL=info

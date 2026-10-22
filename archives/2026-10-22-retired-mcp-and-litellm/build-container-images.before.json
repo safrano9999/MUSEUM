@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "ref": "main",
+  "chains": {
+    "openclaw_ephemeral_testing": {
+      "label": "openclaw-ephemeral-testing",
+      "repository": "https://github.com/safrano9999/openclaw-ephemeral-testing",
+      "workflow": "https://github.com/safrano9999/openclaw-ephemeral-testing/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/openclaw-ephemeral-testing:latest",
+      "deterministic_source": {
+        "repository": "https://github.com/safrano9999/MUSEUM-openclaw-deterministic-latest",
+        "config_path": "../../MUSEUM/projects/openclaw-deterministic-latest/build.conf"
+      },
+      "subclasses": {
+        "safrano_openclaw_testing": {
+          "label": "safrano9999-openclaw-testing",
+          "repository": "https://github.com/safrano9999/safrano9999-openclaw-testing",
+          "workflow": "https://github.com/safrano9999/safrano9999-openclaw-testing/actions/workflows/container-image.yml",
+          "image": "ghcr.io/safrano9999/safrano9999-openclaw-testing:latest",
+          "subclasses": {}
+        }
+      }
+    },
+    "fedora_core_pre": {
+      "label": "fedora44-ai-core-pre",
+      "repository": "https://github.com/safrano9999/fedora-ai-safrano9999",
+      "workflow": "https://github.com/safrano9999/fedora-ai-safrano9999/actions/workflows/fedora44-ai-core-pre-image.yml",
+      "image": "ghcr.io/safrano9999/fedora44-ai-core-pre:latest",
+      "subclasses": {
+        "fedora_core": {
+          "label": "fedora44-ai-core",
+          "repository": "https://github.com/safrano9999/fedora-ai-safrano9999",
+          "workflow": "https://github.com/safrano9999/fedora-ai-safrano9999/actions/workflows/fedora44-ai-core-image.yml",
+          "image": "ghcr.io/safrano9999/fedora44-ai-core:latest",
+          "subclasses": {
+            "fedora_base": {
+              "label": "fedora44-ai-base",
+              "repository": "https://github.com/safrano9999/fedora-ai-safrano9999",
+              "workflow": "https://github.com/safrano9999/fedora-ai-safrano9999/actions/workflows/fedora44-ai-base-image.yml",
+              "image": "ghcr.io/safrano9999/fedora44-ai-base:latest",
+              "subclasses": {
+                "fedora_kachelmann": {
+                  "label": "fedora44-ai-kachelmann",
+                  "repository": "https://github.com/safrano9999/fedora-ai-safrano9999",
+                  "workflow": "https://github.com/safrano9999/fedora-ai-safrano9999/actions/workflows/fedora44-ai-kachelmann-image.yml",
+                  "image": "ghcr.io/safrano9999/fedora44-ai-kachelmann:latest",
+                  "subclasses": {
+                    "fedora_safrano": {
+                      "label": "fedora44-ai-safrano9999",
+                      "repository": "https://github.com/safrano9999/fedora-ai-safrano9999",
+                      "workflow": "https://github.com/safrano9999/fedora-ai-safrano9999/actions/workflows/fedora44-ai-safrano9999-image.yml",
+                      "image": "ghcr.io/safrano9999/fedora44-ai-safrano9999:latest",
+                      "subclasses": {
+                        "fedora_safrano_full": {
+                          "label": "fedora44-ai-safrano9999-full",
+                          "repository": "https://github.com/safrano9999/fedora-ai-safrano9999",
+                          "workflow": "https://github.com/safrano9999/fedora-ai-safrano9999/actions/workflows/fedora44-ai-safrano9999-full-image.yml",
+                          "image": "ghcr.io/safrano9999/fedora44-ai-safrano9999-full:latest",
+                          "subclasses": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hibiscus_mcp": {
+      "label": "hibiscus-mcp",
+      "repository": "https://github.com/safrano9999/HIBISCUS_MCP",
+      "workflow": "https://github.com/safrano9999/HIBISCUS_MCP/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/hibiscus-mcp:latest",
+      "subclasses": {}
+    },
+    "fedora45_core_pre": {
+      "label": "fedora45-ai-core-pre",
+      "repository": "https://github.com/safrano9999/fedora45-ai-safrano9999",
+      "workflow": "https://github.com/safrano9999/fedora45-ai-safrano9999/actions/workflows/fedora45-ai-core-pre-image.yml",
+      "image": "ghcr.io/safrano9999/fedora45-ai-core-pre:latest",
+      "subclasses": {
+        "fedora45_core": {
+          "label": "fedora45-ai-core",
+          "repository": "https://github.com/safrano9999/fedora45-ai-safrano9999",
+          "workflow": "https://github.com/safrano9999/fedora45-ai-safrano9999/actions/workflows/fedora45-ai-core-image.yml",
+          "image": "ghcr.io/safrano9999/fedora45-ai-core:latest",
+          "subclasses": {
+            "fedora45_base": {
+              "label": "fedora45-ai-base",
+              "repository": "https://github.com/safrano9999/fedora45-ai-safrano9999",
+              "workflow": "https://github.com/safrano9999/fedora45-ai-safrano9999/actions/workflows/fedora45-ai-base-image.yml",
+              "image": "ghcr.io/safrano9999/fedora45-ai-base:latest",
+              "subclasses": {
+                "fedora45_kachelmann": {
+                  "label": "fedora45-ai-kachelmann",
+                  "repository": "https://github.com/safrano9999/fedora45-ai-safrano9999",
+                  "workflow": "https://github.com/safrano9999/fedora45-ai-safrano9999/actions/workflows/fedora45-ai-kachelmann-image.yml",
+                  "image": "ghcr.io/safrano9999/fedora45-ai-kachelmann:latest",
+                  "subclasses": {
+                    "fedora45_safrano": {
+                      "label": "fedora45-ai-safrano9999",
+                      "repository": "https://github.com/safrano9999/fedora45-ai-safrano9999",
+                      "workflow": "https://github.com/safrano9999/fedora45-ai-safrano9999/actions/workflows/fedora45-ai-safrano9999-image.yml",
+                      "image": "ghcr.io/safrano9999/fedora45-ai-safrano9999:latest",
+                      "subclasses": {
+                        "fedora45_safrano_full": {
+                          "label": "fedora45-ai-safrano9999-full",
+                          "repository": "https://github.com/safrano9999/fedora45-ai-safrano9999",
+                          "workflow": "https://github.com/safrano9999/fedora45-ai-safrano9999/actions/workflows/fedora45-ai-safrano9999-full-image.yml",
+                          "image": "ghcr.io/safrano9999/fedora45-ai-safrano9999-full:latest",
+                          "subclasses": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "safrano9999_hibiscus": {
+      "label": "safrano9999-hibiscus",
+      "repository": "https://github.com/safrano9999/safrano9999-hibiscus",
+      "workflow": "https://github.com/safrano9999/safrano9999-hibiscus/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/safrano9999-hibiscus:latest",
+      "subclasses": {}
+    }
+  },
+  "standalone": {
+    "socialmedia_firefox": {
+      "label": "socialmedia-syncher-firefox",
+      "repository": "https://github.com/safrano9999/SOCIALMEDIA-SYNCHER",
+      "workflow": "https://github.com/safrano9999/SOCIALMEDIA-SYNCHER/actions/workflows/firefox-container.yml",
+      "image": "ghcr.io/safrano9999/socialmedia-syncher-firefox:latest",
+      "push_latest": false,
+      "subclasses": {}
+    },
+    "kachelmann_mcp": {
+      "label": "kachelmann-mcp",
+      "repository": "https://github.com/safrano9999/kachelmann-mcp",
+      "workflow": "https://github.com/safrano9999/kachelmann-mcp/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/kachelmann-mcp:latest",
+      "subclasses": {}
+    },
+    "thunderbird_mcp": {
+      "label": "thunderbird-mcp",
+      "repository": "https://github.com/safrano9999/thunderbird-mcp-image",
+      "workflow": "https://github.com/safrano9999/thunderbird-mcp-image/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/thunderbird-mcp-alpine:latest",
+      "subclasses": {}
+    },
+    "vikunja_mcp": {
+      "label": "vikunja-mcp",
+      "repository": "https://github.com/safrano9999/Vikunja-MCP",
+      "workflow": "https://github.com/safrano9999/Vikunja-MCP/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/vikunja-mcp:latest",
+      "subclasses": {}
+    },
+    "litellm_database_chatgpt_reasoning": {
+      "label": "litellm-database-chatgpt-reasoning",
+      "repository": "https://github.com/safrano9999/litellm-database-chatgpt-reasoning",
+      "workflow": "https://github.com/safrano9999/litellm-database-chatgpt-reasoning/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/litellm-database-chatgpt-reasoning:latest",
+      "subclasses": {}
+    },
+    "mtg": {
+      "label": "safrano9999-mtg",
+      "repository": "https://github.com/safrano9999/safrano9999-mtg",
+      "workflow": "https://github.com/safrano9999/safrano9999-mtg/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/safrano9999-mtg:latest",
+      "subclasses": {}
+    },
+    "paperless_mcp": {
+      "label": "paperless-mcp",
+      "repository": "https://github.com/safrano9999/PaperlessMCP",
+      "workflow": "https://github.com/safrano9999/PaperlessMCP/actions/workflows/container-image.yml",
+      "image": "ghcr.io/safrano9999/paperlessmcp:latest",
+      "subclasses": {}
+    }
+  }
+}

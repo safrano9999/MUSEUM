@@ -1,0 +1,10 @@
+#CONTAINER-NAME
+CONTAINER_NAME=vikunja-mcp
+
+#default-preset: ${CONTAINER_NAME}-files:/app/vikunja/files:Z
+#required: Vikunja uploaded files
+VIKUNJA_VOLUMES=${CONTAINER_NAME}-files:/app/vikunja/files:Z
+
+#repeat-group: ADDITIONAL_LINE suffix02 ADDITIONAL_LINE
+#repeat-freeform: ADDITIONAL_LINE
+ADDITIONAL_LINE=

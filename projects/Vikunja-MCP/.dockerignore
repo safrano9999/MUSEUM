@@ -1,0 +1,7 @@
+.git
+.env
+config.conf
+container.conf
+*.container
+docker-compose.yml
+passwd.md
