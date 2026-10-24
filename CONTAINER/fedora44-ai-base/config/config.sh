@@ -14,7 +14,7 @@ directory_has_config_examples() {
        [ -f "$directory/container.example" ]; then
         return 0
     fi
-    for env_example in "$directory"/fedora44-ai-*.env_example; do
+    for env_example in "$directory"/fedora[0-9]*-ai-*.env_example; do
         [ -f "$env_example" ] || continue
         [[ "$env_example" == *-additional.env_example ]] && continue
         stem="${env_example%.env_example}"
@@ -52,7 +52,7 @@ select_config_examples() {
     local env_example stem
     local -a fedora_stems=()
 
-    for env_example in "$directory"/fedora44-ai-*.env_example; do
+    for env_example in "$directory"/fedora[0-9]*-ai-*.env_example; do
         [ -f "$env_example" ] || continue
         [[ "$env_example" == *-additional.env_example ]] && continue
         stem="${env_example%.env_example}"
@@ -1014,16 +1014,21 @@ add_repo_bind_mount() {
         echo "Invalid %config-conf path: $rel" >&2
         return 1
     fi
-    [[ "$rel" == /* || "$rel" == ../* ]] && return 0
-    rel="${rel#./}"
-    [ -n "$rel" ] || return 0
-
-    source="$(cd "$DIR" && realpath -m -- "$rel")"
-    relative="$(realpath -m --relative-to="$DIR" "$source")"
-    [[ "$relative" != .. && "$relative" != ../* ]] || {
-        echo "Bind source escapes the configuration directory: $rel" >&2
-        return 1
-    }
+    if [[ "$rel" == /* ]]; then
+        # Absolute host paths require an explicit container mount target.
+        [ -n "$target_override" ] || return 0
+        source="$(realpath -m -- "$rel")"
+    else
+        [[ "$rel" == ../* ]] && return 0
+        rel="${rel#./}"
+        [ -n "$rel" ] || return 0
+        source="$(cd "$DIR" && realpath -m -- "$rel")"
+        relative="$(realpath -m --relative-to="$DIR" "$source")"
+        [[ "$relative" != .. && "$relative" != ../* ]] || {
+            echo "Bind source escapes the configuration directory: $rel" >&2
+            return 1
+        }
+    fi
     mkdir -p "$source"
     if [ -n "$target_override" ]; then
         [[ "$target_override" == /* && "$target_override" != / && "$target_override" != *:* ]] || {
@@ -1046,6 +1051,15 @@ add_readonly_shared_bind_mount() {
     case "${configured,,}" in
         ""|blank|null) return 0 ;;
     esac
+    if [[ "$configured" == %config-conf/* ]]; then
+        source="$(realpath -m -- "$DIR/${configured#%config-conf/}")"
+        [[ "$source" == "$(realpath -e -- "$DIR")/"* ]] || {
+            echo "Shared bind source escapes the configuration directory" >&2
+            return 1
+        }
+        mkdir -p -m 0700 -- "$source"
+        configured="$source"
+    fi
     [[ "$configured" == /* && "$configured" != *:* \
         && "$configured" != *[[:space:]]* \
         && "$configured" != *$'\n'* && "$configured" != *$'\r'* ]] || {
@@ -1132,10 +1146,19 @@ add_sqlite_volume_mounts() {
 }
 
 add_optional_persistence_mounts() {
-    local item source key path
+    local item source key path destination existing mounted explicit
     [ -x "$OPTIONAL_PERSISTENCE" ] || return 0
     while IFS= read -r item || [ -n "$item" ]; do
         [ -n "$item" ] || continue
+        # An explicit mount selects an existing state volume; do not shadow it
+        # with the automatically named default at the same destination.
+        destination="${item#*:}"; destination="${destination%%:*}"
+        explicit=false
+        for existing in "${volumes[@]}"; do
+            mounted="${existing#*:}"; mounted="${mounted%%:*}"
+            if [[ "$mounted" == "$destination" ]]; then explicit=true; break; fi
+        done
+        $explicit && continue
         source="${item%%:*}"
         add_unique "$item" volumes
         add_unique "$source" named_volumes
@@ -1372,7 +1395,7 @@ configure_from_example() {
         local group="$1"
         local style="${repeat_group_styles[$group]}"
         local fields="${repeat_group_fields[$group]}"
-        local index field mapped value all complete=false slot_found=false next_index=1
+        local index field mapped value all complete=false has_value=false slot_found=false next_index=1
         local mode default_mode
 
         [ -z "${REPEAT_GROUP_MODES[$group]+x}" ] || return 0
@@ -1383,13 +1406,19 @@ configure_from_example() {
                 mapped="$(repeat_group_key "$group" "$style" "$field" "$index")"
                 value="$(read_kv_file "$target" "$mapped" || true)"
                 case "${value,,}" in ""|blank|null) value="" ;; esac
-                if [ -z "$value" ] && [[ -z "${repeat_optional_complete[$field]+x}" ]]; then
-                    all=false
+                if [ -z "$value" ]; then
+                    [[ -n "${repeat_optional_complete[$field]+x}" ]] || all=false
+                else
+                    has_value=true
                 fi
             done
             if [ "$all" = "true" ]; then
-                complete=true
-                continue
+                if [ "$has_value" = "true" ]; then
+                    complete=true
+                    continue
+                fi
+                slot_found=true
+                break
             fi
             next_index="$index"
             slot_found=true
@@ -2472,6 +2501,50 @@ mount_bind_from_value() {
     add_repo_bind_mount "$rel" "$target_override"
 }
 
+# Optional static image port, separate from user-configurable host publication.
+container_fixed_port() {
+    local requested="$1" source_file line directive key port
+    while IFS= read -r source_file || [ -n "$source_file" ]; do
+        [ -f "$source_file" ] || continue
+        while IFS= read -r line || [ -n "$line" ]; do
+            line="$(trim "$line")"
+            [[ "$line" == \#container-port:* ]] || continue
+            directive="$(trim "${line#\#container-port:}")"
+            read -r key port <<< "$directive"
+            [ "$key" = "$requested" ] || continue
+            [[ "$port" =~ ^[0-9]+$ ]] && (( 10#$port >= 1 && 10#$port <= 65535 )) || {
+                echo "Invalid #container-port for $key" >&2
+                return 1
+            }
+            printf '%s\n' "$port"
+            return 0
+        done < "$source_file"
+    done < <(mount_if_source_files)
+}
+
+# #volume-if: VOLUME_KEY KEY [OTHER_KEY=value ...] uses OR, never shell eval.
+# Bare keys mean nonempty/enabled; KEY>0 accepts positive decimal integers.
+volume_rule_matches() {
+    local rule key value
+    local -a rules=()
+    read -ra rules <<< "$1"
+    for rule in "${rules[@]}"; do
+        key="${rule%%[=>]*}"
+        value="$(config_value "$key")" || continue
+        case "$rule" in
+            *'>0') [[ "$value" =~ ^[0-9]+$ && "$value" =~ [1-9] ]] && return 0 ;;
+            *=*) [ "$(normalize_rule_value "$value")" = "$(normalize_rule_value "${rule#*=}")" ] && return 0 ;;
+            *) case "${value,,}" in ""|blank|null|0|false|no|off) ;; *) return 0 ;; esac ;;
+        esac
+    done
+    return 1
+}
+
+# Commas inside mount options (ro,z) are not separators between volumes.
+split_volume_items() {
+    mapfile -t items < <(printf '%s\n' "$1" | sed -E 's/,([^,:]+:)/\n\1/g')
+}
+
 generate_container_files() {
     local source_file host image compose_file quadlet_file line stripped entry key value
     local prefix internal_key internal_port publish_port publish_host map enabled_key enabled_value
@@ -2480,13 +2553,18 @@ generate_container_files() {
     local host_key
     local -a ports=()
     local -a volumes=()
+    local -a commented_volumes=()
+    local -a conditional_volume_keys=()
+    local -a conditions=()
+    local -A volume_rules=()
     local -a devices=()
     local -a caps=()
     local -a named_volumes=()
     local -a persistent_envs=()
     local -a additional_lines=()
-    local item source container_nr_value command_mode compose_volume
+    local item source container_nr_value command_mode compose_volume rules active
     local tunnel_only=false
+    local registry_autoupdate=true
     local publish_port_declared=false
 
     container_nr_value="$(config_value CONTAINER_NR || true)"
@@ -2509,6 +2587,23 @@ generate_container_files() {
         [ -f "$source_file" ] || continue
         while IFS= read -r line || [ -n "$line" ]; do
             stripped="$(trim "$line")"
+            if [[ "$stripped" == \#volume-if:* ]]; then
+                read -r key rules <<< "${stripped#\#volume-if:}"
+                [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*_VOLUMES$ && -n "$rules" ]] || {
+                    echo "Invalid #volume-if: expected VOLUME_KEY and conditions" >&2
+                    return 1
+                }
+                read -ra conditions <<< "$rules"
+                for condition in "${conditions[@]}"; do
+                    [[ "$condition" =~ ^[A-Za-z_][A-Za-z0-9_]*(=[A-Za-z0-9_./:-]*|\>0)?$ ]] || {
+                        echo "Invalid #volume-if condition for $key" >&2
+                        return 1
+                    }
+                done
+                volume_rules[$key]+=" $rules"
+                add_unique "$key" conditional_volume_keys
+                continue
+            fi
             if [[ "$stripped" == \#mount-bind-ro-shared:* ]]; then
                 directive="$(trim "${stripped#\#mount-bind-ro-shared:}")"
                 target_key="${directive%%:*}"
@@ -2583,7 +2678,8 @@ generate_container_files() {
                 fi
                 case "${value,,}" in ""|blank|null) continue ;; esac
                 internal_key="${prefix}_PORT"
-                internal_port="$(config_value "$internal_key" || true)"
+                internal_port="$(container_fixed_port "$key")" || return 1
+                [ -n "$internal_port" ] || internal_port="$(config_value "$internal_key" || true)"
                 [ -n "$internal_port" ] || internal_port="$value"
                 publish_port="$value"
                 publish_host="$(config_value "${prefix}_PUBLISH_HOST" || true)"
@@ -2612,8 +2708,9 @@ generate_container_files() {
             fi
 
             if [[ "$key" == *_VOLUMES ]]; then
+                [[ -z "${volume_rules[$key]+x}" ]] || continue
                 value="$(expand_volume_value "$key" "$value")" || return 1
-                IFS=',' read -ra items <<< "$value"
+                split_volume_items "$value"
                 for item in "${items[@]}"; do
                     item="$(trim "$item")"
                     source="${item%%:*}"
@@ -2628,19 +2725,58 @@ generate_container_files() {
         done < "$source_file"
     done < <(config_source_files)
 
+    # Always render declared conditional mounts, even with missing credentials.
+    # Explicit blank disables a mount; its example supplies the commented path.
+    for key in "${conditional_volume_keys[@]}"; do
+        value="$(config_value "$key" || true)"
+        active=false
+        case "${value,,}" in
+            ""|blank|null)
+                while IFS= read -r source_file; do
+                    value="$(read_kv_file "$source_file" "$key")" && break
+                done < <(mount_if_source_files)
+                ;;
+            *) if volume_rule_matches "${volume_rules[$key]}"; then active=true; fi ;;
+        esac
+        case "${value,,}" in ""|blank|null)
+            echo "#volume-if requires a nonempty mount example for $key" >&2
+            return 1 ;;
+        esac
+        value="$(expand_volume_value "$key" "$value")" || return 1
+        split_volume_items "$value"
+        for item in "${items[@]}"; do
+            item="$(trim "$item")"
+            [ -n "$item" ] || continue
+            source="${item%%:*}"
+            item="$(normalize_volume_item "$item")"
+            if $active; then
+                add_unique "$item" volumes
+                if [[ "$source" != /* && "$source" != .* && "$source" != *"/"* ]]; then
+                    add_unique "$source" named_volumes
+                fi
+            else
+                add_unique "$item" commented_volumes
+            fi
+        done
+    done
+
     add_repo_sot_file_mounts
     add_sqlite_volume_mounts
     add_optional_persistence_mounts
+
+    for item in "${additional_lines[@]}"; do
+        [[ "$item" != Pull=never ]] || registry_autoupdate=false
+    done
 
     if [ "$tunnel_only" != "true" ] && [ "$publish_port_declared" != "true" ] \
         && [ "${#ports[@]}" -eq 0 ] && [ -n "$first_port" ]; then
         add_unique "${host}:${first_port}:${first_port}" ports
     fi
 
-    if [ -z "$first_port" ] && [ ! -f "$DIR/webui.py" ]; then
+    if [ "$command_mode" != image ] && [ -z "$first_port" ] && [ ! -f "$DIR/webui.py" ]; then
         return 0
     fi
-    if [ -z "$first_port" ]; then
+    if [ "$command_mode" != image ] && [ -z "$first_port" ]; then
         echo "  No PORT or *_PORT found; skipping docker-compose.yml and $CONTAINER_NAME.container"
         return 0
     fi
@@ -2660,8 +2796,12 @@ generate_container_files() {
         fi
         printf '    # Container image from config or existing generated file\n'
         printf '    image: %s\n' "$image"
-        printf '    labels:\n'
-        printf '      - "io.containers.autoupdate=registry"\n'
+        if $registry_autoupdate; then
+            printf '    labels:\n'
+            printf '      - "io.containers.autoupdate=registry"\n'
+        else
+            printf '    pull_policy: never\n'
+        fi
         printf '    container_name: %s\n' "$CONTAINER_NAME"
         printf '    hostname: %s\n' "$CONTAINER_NAME"
         if [ "${#ports[@]}" -gt 0 ]; then
@@ -2669,11 +2809,10 @@ generate_container_files() {
             printf '    ports:\n'
             for item in "${ports[@]}"; do printf '      - "%s"\n' "$item"; done
         fi
-        if [ -f "$CONFIG_FILE" ] || [ -f "$CONTAINER_FILE" ] || [ -f "$ENV_FILE" ]; then
+        if [ -f "$CONFIG_FILE" ] || [ -f "$ENV_FILE" ]; then
             printf '    # Runtime configuration files generated from *example files\n'
             printf '    env_file:\n'
             [ -f "$CONFIG_FILE" ] && printf '      - %s\n' "$CONFIG_FILE"
-            [ -f "$CONTAINER_FILE" ] && printf '      - %s\n' "$CONTAINER_FILE"
             [ -f "$ENV_FILE" ] && printf '      - %s\n' "$ENV_FILE"
         fi
         if [ "${#persistent_envs[@]}" -gt 0 ]; then
@@ -2722,11 +2861,10 @@ generate_container_files() {
         printf 'ContainerName=%s\n' "$CONTAINER_NAME"
         printf '# Container image from config or existing generated file\n'
         printf 'Image=%s\n' "$image"
-        if [ -f "$CONFIG_FILE" ] || [ -f "$CONTAINER_FILE" ] || [ -f "$ENV_FILE" ]; then
+        if [ -f "$CONFIG_FILE" ] || [ -f "$ENV_FILE" ]; then
             printf '# Runtime configuration files generated from *example files\n'
         fi
         [ -f "$CONFIG_FILE" ] && printf 'EnvironmentFile=%s\n' "$CONFIG_FILE"
-        [ -f "$CONTAINER_FILE" ] && printf 'EnvironmentFile=%s\n' "$CONTAINER_FILE"
         [ -f "$ENV_FILE" ] && printf 'EnvironmentFile=%s\n' "$ENV_FILE"
         for item in "${persistent_envs[@]}"; do printf 'Environment=%s\n' "$item"; done
         [ "${#ports[@]}" -gt 0 ] && printf '# Port mappings: publish host:PUBLISH_PORT:PORT from config.conf/container.conf\n'
@@ -2737,12 +2875,16 @@ generate_container_files() {
         fi
         [ "${#volumes[@]}" -gt 0 ] && printf '# Bind mounts and named volumes from runtime config\n'
         for item in "${volumes[@]}"; do printf 'Volume=%s\n' "$item"; done
+        for item in "${commented_volumes[@]}"; do
+            [[ " ${volumes[*]} " == *" $item "* ]] || printf '#Volume=%s\n' "$item"
+        done
         [ "${#caps[@]}" -gt 0 ] && printf '# Linux capabilities from *_CAPABILITIES in config.conf\n'
         for item in "${caps[@]}"; do printf 'AddCapability=%s\n' "$item"; done
         [ "${#devices[@]}" -gt 0 ] && printf '# Device mappings from *_DEVICES in config.conf\n'
         for item in "${devices[@]}"; do printf 'AddDevice=%s\n' "$item"; done
         for item in "${additional_lines[@]}"; do printf '%s\n' "$item"; done
-        printf 'AutoUpdate=registry\n\n'
+        if $registry_autoupdate; then printf 'AutoUpdate=registry\n'; fi
+        printf '\n'
         printf '[Service]\n'
         printf 'Restart=always\n'
         printf 'TimeoutStartSec=30\n\n'
